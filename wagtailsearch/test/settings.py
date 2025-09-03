@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "wagtailsearch.test",
     "wagtail",
     "wagtail.test.testapp",
+    "wagtail.test.customuser",
     "wagtail.images",
     "wagtail.documents",
     "wagtail.admin",
@@ -177,3 +178,5 @@ WAGTAILADMIN_RICH_TEXT_EDITORS = {
     "default": {"WIDGET": "wagtail.admin.rich_text.DraftailRichTextArea"},
     "custom": {"WIDGET": "wagtail.test.testapp.rich_text.CustomRichTextArea"},
 }
+
+AUTH_USER_MODEL = "customuser.CustomUser"
