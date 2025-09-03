@@ -6,7 +6,7 @@ from django.test import TestCase, override_settings
 from wagtail.models import Page
 from wagtailsearch import index
 from wagtailsearch.test import models
-from wagtail.test.testapp.models import AdvertWithCustomUUIDPrimaryKey, SimplePage
+from wagtail.test.testapp.models import SimplePage
 from wagtail.test.utils import WagtailTestUtils
 
 
@@ -169,7 +169,7 @@ class TestSignalHandlers(WagtailTestUtils, TestCase):
     def test_index_on_create_with_uuid_primary_key(self, backend):
         backend().reset_mock()
         with self.captureOnCommitCallbacks(execute=True):
-            obj = AdvertWithCustomUUIDPrimaryKey.objects.create(text="Test")
+            obj = models.AdvertWithCustomUUIDPrimaryKey.objects.create(text="Test")
         backend().add.assert_called_with(obj)
 
     def test_index_on_update(self, backend):
@@ -187,7 +187,7 @@ class TestSignalHandlers(WagtailTestUtils, TestCase):
         self.assertEqual(indexed_object.title, "Updated test")
 
     def test_index_on_update_with_uuid_primary_key(self, backend):
-        obj = AdvertWithCustomUUIDPrimaryKey.objects.create(text="Test")
+        obj = models.AdvertWithCustomUUIDPrimaryKey.objects.create(text="Test")
 
         backend().reset_mock()
         obj.text = "Updated test"
@@ -209,7 +209,7 @@ class TestSignalHandlers(WagtailTestUtils, TestCase):
         backend().delete.assert_called_with(obj)
 
     def test_index_on_delete_with_uuid_primary_key(self, backend):
-        obj = AdvertWithCustomUUIDPrimaryKey.objects.create(text="Test")
+        obj = models.AdvertWithCustomUUIDPrimaryKey.objects.create(text="Test")
 
         backend().reset_mock()
         with self.captureOnCommitCallbacks(execute=True):
