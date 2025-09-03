@@ -34,6 +34,13 @@ ALLOWED_HOSTS = ["localhost", "testserver"]
 INSTALLED_APPS = [
     "wagtailsearch",
     "wagtailsearch.test",
+    "wagtail",
+    "wagtail.test.testapp",
+    "wagtail.images",
+    "wagtail.documents",
+    "wagtail.admin",
+    "wagtail.contrib.forms",
+    "taggit",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -137,3 +144,36 @@ STATIC_URL = "/static/"
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "test-media")
 
+WAGTAILSEARCH_BACKENDS = {
+    "default": {
+        "BACKEND": "wagtail.search.backends.database.fallback",
+    }
+}
+
+if os.environ.get("DATABASE_ENGINE") == "django.db.backends.postgresql":
+    INSTALLED_APPS.append("django.contrib.postgres")
+    WAGTAILSEARCH_BACKENDS["postgresql"] = {
+        "BACKEND": "wagtail.search.backends.database",
+        "AUTO_UPDATE": False,
+        "SEARCH_CONFIG": "english",
+    }
+
+if "ELASTICSEARCH_URL" in os.environ:
+    if os.environ.get("ELASTICSEARCH_VERSION") == "8":
+        backend = "wagtail.search.backends.elasticsearch8"
+    elif os.environ.get("ELASTICSEARCH_VERSION") == "7":
+        backend = "wagtail.search.backends.elasticsearch7"
+
+    WAGTAILSEARCH_BACKENDS["elasticsearch"] = {
+        "BACKEND": backend,
+        "URLS": [os.environ["ELASTICSEARCH_URL"]],
+        "TIMEOUT": 10,
+        "max_retries": 1,
+        "AUTO_UPDATE": False,
+        "INDEX_SETTINGS": {"settings": {"index": {"number_of_shards": 1}}},
+    }
+
+WAGTAILADMIN_RICH_TEXT_EDITORS = {
+    "default": {"WIDGET": "wagtail.admin.rich_text.DraftailRichTextArea"},
+    "custom": {"WIDGET": "wagtail.test.testapp.rich_text.CustomRichTextArea"},
+}
