@@ -148,3 +148,14 @@ class AdvertWithCustomUUIDPrimaryKey(index.Indexed, models.Model):
 
     def __str__(self):
         return self.text
+    
+
+class Document(index.Indexed, models.Model):
+    title = models.CharField(max_length=255)
+
+    search_fields = [
+        index.SearchField("title", boost=10),
+    ]
+
+    def __str__(self):
+        return self.title
