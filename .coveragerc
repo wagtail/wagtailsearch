@@ -1,7 +1,7 @@
 [run]
 branch = True
-include = wagtail_search/*
-omit = */migrations/*,*/tests/*
+source = wagtailsearch
+omit = */migrations/*
 
 [report]
 # Regexes for lines to exclude from consideration
