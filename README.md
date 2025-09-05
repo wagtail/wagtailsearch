@@ -69,13 +69,37 @@ $ git ls-files --others --cached --exclude-standard | xargs pre-commit run --fil
 
 ### How to run tests
 
-Now you can run tests as shown below:
+A Vagrant provisioning script is provided to install the dependencies for various backends. To install:
 
-```sh
-tox
+```shell
+vagrant up
+vagrant ssh
 ```
 
-or, you can run them for a specific environment `tox -e python3.11-django4.2` or specific test
-`tox -e python3.11-django4.2-sqlite wagtailsearch.tests.test_file.TestClass.test_method`
+To test under sqlite:
 
-To run the test app interactively, use `tox -e interactive`, visit `http://127.0.0.1:8020/admin/` and log in with `admin`/`changeme`.
+```shell
+cd /vagrant/
+python testmanage.py test
+```
+
+To test under PostgreSQL:
+
+```shell
+cd /vagrant/
+DATABASE_URL="postgres:///wagtailsearch" python ./testmanage.py test
+```
+
+To test under MySQL:
+
+```shell
+cd /vagrant/
+DATABASE_URL="mysql://vagrant:vagrant@localhost/wagtailsearch" python ./testmanage.py test
+```
+
+To test under Elasticsearch 8:
+
+```shell
+cd /vagrant/
+ELASTICSEARCH_URL="https://wagtail:wagtail@localhost:9200" ELASTICSEARCH_VERSION=8 ELASTICSEARCH_CA_CERTS=~/http_ca.crt python testmanage.py test
+```

@@ -147,23 +147,23 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "test-media")
 
 WAGTAILSEARCH_BACKENDS = {
     "default": {
-        "BACKEND": "wagtail.search.backends.database.fallback",
+        "BACKEND": "wagtailsearch.backends.database.fallback",
     }
 }
 
 if os.environ.get("DATABASE_ENGINE") == "django.db.backends.postgresql":
     INSTALLED_APPS.append("django.contrib.postgres")
     WAGTAILSEARCH_BACKENDS["postgresql"] = {
-        "BACKEND": "wagtail.search.backends.database",
+        "BACKEND": "wagtailsearch.backends.database",
         "AUTO_UPDATE": False,
         "SEARCH_CONFIG": "english",
     }
 
 if "ELASTICSEARCH_URL" in os.environ:
     if os.environ.get("ELASTICSEARCH_VERSION") == "8":
-        backend = "wagtail.search.backends.elasticsearch8"
+        backend = "wagtailsearch.backends.elasticsearch8"
     elif os.environ.get("ELASTICSEARCH_VERSION") == "7":
-        backend = "wagtail.search.backends.elasticsearch7"
+        backend = "wagtailsearch.backends.elasticsearch7"
 
     WAGTAILSEARCH_BACKENDS["elasticsearch"] = {
         "BACKEND": backend,
@@ -172,6 +172,9 @@ if "ELASTICSEARCH_URL" in os.environ:
         "max_retries": 1,
         "AUTO_UPDATE": False,
         "INDEX_SETTINGS": {"settings": {"index": {"number_of_shards": 1}}},
+        "OPTIONS": {
+            "ca_certs": os.environ.get("ELASTICSEARCH_CA_CERTS"),
+        }
     }
 
 WAGTAILADMIN_RICH_TEXT_EDITORS = {
