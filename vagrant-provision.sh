@@ -40,13 +40,35 @@ cat $BASHRC | grep -v "^$BASHRC_LINE_VENV" > "${BASHRC}.tmp" && mv ${BASHRC}.tmp
 echo $BASHRC_LINE_VENV >> $BASHRC
 
 
-# Elasticsearch
-ES_VERSION=8.19.3
-ES_DOWNLOAD_FILE=elasticsearch-$ES_VERSION-linux-`uname -p`.tar.gz
-ES_DOWNLOAD_URL=https://artifacts.elastic.co/downloads/elasticsearch/$ES_DOWNLOAD_FILE
-ES_ROOT=/home/$DEV_USER/elasticsearch-$ES_VERSION
+# Elasticsearch 7
+ES7_VERSION=7.17.29
+ES7_DOWNLOAD_FILE=elasticsearch-$ES7_VERSION-linux-`uname -p`.tar.gz
+ES7_DOWNLOAD_URL=https://artifacts.elastic.co/downloads/elasticsearch/$ES7_DOWNLOAD_FILE
+ES7_ROOT=/home/$DEV_USER/elasticsearch-$ES7_VERSION
+ES7_VIRTUALENV_DIR=/home/$DEV_USER/.virtualenvs/wagtailsearches7
+ES7_PIP=$ES7_VIRTUALENV_DIR/bin/pip
 
-su - $DEV_USER -c "wget $ES_DOWNLOAD_URL -P /home/$DEV_USER"
-su - $DEV_USER -c "cd /home/$DEV_USER && tar xzf $ES_DOWNLOAD_FILE"
-su - $DEV_USER -c "$ES_ROOT/bin/elasticsearch-users useradd wagtail -p wagtail -r superuser"
-su - $DEV_USER -c "$PIP install 'elasticsearch>=8.0.0,<9.0.0'"
+su - $DEV_USER -c "wget $ES7_DOWNLOAD_URL -P /home/$DEV_USER"
+su - $DEV_USER -c "cd /home/$DEV_USER && tar xzf $ES7_DOWNLOAD_FILE"
+su - $DEV_USER -c "$ES7_ROOT/bin/elasticsearch-users useradd wagtail -p wagtail -r superuser"
+
+su - $DEV_USER -c "python -m venv $ES7_VIRTUALENV_DIR"
+su - $DEV_USER -c "$ES7_PIP install 'elasticsearch>=7.0.0,<8.0.0'"
+su - $DEV_USER -c "$ES7_PIP install -e $PROJECT_DIR[testing]"
+
+
+# Elasticsearch 8
+ES8_VERSION=8.19.3
+ES8_DOWNLOAD_FILE=elasticsearch-$ES8_VERSION-linux-`uname -p`.tar.gz
+ES8_DOWNLOAD_URL=https://artifacts.elastic.co/downloads/elasticsearch/$ES8_DOWNLOAD_FILE
+ES8_ROOT=/home/$DEV_USER/elasticsearch-$ES8_VERSION
+ES8_VIRTUALENV_DIR=/home/$DEV_USER/.virtualenvs/wagtailsearches8
+ES8_PIP=$ES8_VIRTUALENV_DIR/bin/pip
+
+su - $DEV_USER -c "wget $ES8_DOWNLOAD_URL -P /home/$DEV_USER"
+su - $DEV_USER -c "cd /home/$DEV_USER && tar xzf $ES8_DOWNLOAD_FILE"
+su - $DEV_USER -c "$ES8_ROOT/bin/elasticsearch-users useradd wagtail -p wagtail -r superuser"
+
+su - $DEV_USER -c "python -m venv $ES8_VIRTUALENV_DIR"
+su - $DEV_USER -c "$ES8_PIP install 'elasticsearch>=8.0.0,<9.0.0'"
+su - $DEV_USER -c "$ES8_PIP install -e $PROJECT_DIR[testing]"

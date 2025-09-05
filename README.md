@@ -79,6 +79,7 @@ vagrant ssh
 To test under sqlite:
 
 ```shell
+source ~/.virtualenvs/wagtailsearch/bin/activate
 cd /vagrant/
 python testmanage.py test
 ```
@@ -86,6 +87,7 @@ python testmanage.py test
 To test under PostgreSQL:
 
 ```shell
+source ~/.virtualenvs/wagtailsearch/bin/activate
 cd /vagrant/
 DATABASE_URL="postgres:///wagtailsearch" python ./testmanage.py test
 ```
@@ -93,8 +95,19 @@ DATABASE_URL="postgres:///wagtailsearch" python ./testmanage.py test
 To test under MySQL:
 
 ```shell
+source ~/.virtualenvs/wagtailsearch/bin/activate
 cd /vagrant/
 DATABASE_URL="mysql://vagrant:vagrant@localhost/wagtailsearch" python ./testmanage.py test
+```
+
+To test under Elasticsearch 7:
+
+```shell
+/home/vagrant/elasticsearch-7.17.29/bin/elasticsearch
+# then in another shell session:
+source ~/.virtualenvs/wagtailsearches7/bin/activate
+cd /vagrant/
+ELASTICSEARCH_URL="http://wagtail:wagtail@localhost:9200" ELASTICSEARCH_VERSION=7 python testmanage.py test
 ```
 
 To test under Elasticsearch 8:
@@ -102,6 +115,7 @@ To test under Elasticsearch 8:
 ```shell
 /home/vagrant/elasticsearch-8.19.3/bin/elasticsearch
 # then in another shell session:
+source ~/.virtualenvs/wagtailsearches8/bin/activate
 cd /vagrant/
 ELASTICSEARCH_URL="https://wagtail:wagtail@localhost:9200" ELASTICSEARCH_VERSION=8 ELASTICSEARCH_CA_CERTS=~/elasticsearch-8.19.3/config/certs/http_ca.crt python testmanage.py test
 ```
