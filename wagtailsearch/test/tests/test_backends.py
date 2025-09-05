@@ -32,10 +32,9 @@ from wagtailsearch.query import (
     PlainText,
 )
 from wagtailsearch.test import models
-from wagtail.test.utils import WagtailTestUtils
 
 
-class BackendTests(WagtailTestUtils):
+class BackendTests:
     # To test a specific backend, subclass BackendTests and define self.backend_path.
 
     fixtures = ["search"]

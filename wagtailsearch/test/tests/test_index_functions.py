@@ -7,7 +7,6 @@ from wagtail.models import Page
 from wagtailsearch import index
 from wagtailsearch.test import models
 from wagtail.test.testapp.models import SimplePage
-from wagtail.test.utils import WagtailTestUtils
 
 
 class TestGetIndexedInstance(TestCase):
@@ -47,7 +46,7 @@ class TestGetIndexedInstance(TestCase):
         "default": {"BACKEND": "wagtailsearch.test.tests.DummySearchBackend"}
     }
 )
-class TestInsertOrUpdateObject(WagtailTestUtils, TestCase):
+class TestInsertOrUpdateObject(TestCase):
     def test_inserts_object(self, backend):
         obj = models.Book.objects.create(
             title="Test", publication_date=date(2017, 10, 18), number_of_pages=100
@@ -110,7 +109,7 @@ class TestInsertOrUpdateObject(WagtailTestUtils, TestCase):
         "default": {"BACKEND": "wagtailsearch.test.tests.DummySearchBackend"}
     }
 )
-class TestRemoveObject(WagtailTestUtils, TestCase):
+class TestRemoveObject(TestCase):
     def test_removes_object(self, backend):
         obj = models.Book.objects.create(
             title="Test", publication_date=date(2017, 10, 18), number_of_pages=100
@@ -157,7 +156,7 @@ class TestRemoveObject(WagtailTestUtils, TestCase):
         "default": {"BACKEND": "wagtailsearch.test.tests.DummySearchBackend"}
     }
 )
-class TestSignalHandlers(WagtailTestUtils, TestCase):
+class TestSignalHandlers(TestCase):
     def test_index_on_create(self, backend):
         backend().reset_mock()
         with self.captureOnCommitCallbacks(execute=True):
@@ -239,7 +238,7 @@ class TestSignalHandlers(WagtailTestUtils, TestCase):
         "default": {"BACKEND": "wagtailsearch.test.tests.DummySearchBackend"}
     }
 )
-class TestSignalHandlersSearchDisabled(TestCase, WagtailTestUtils):
+class TestSignalHandlersSearchDisabled(TestCase):
     def test_index_on_create_and_update(self, backend):
         obj = models.UnindexedBook.objects.create(
             title="Test", publication_date=date(2017, 10, 18), number_of_pages=100
