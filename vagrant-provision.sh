@@ -41,13 +41,12 @@ echo $BASHRC_LINE_VENV >> $BASHRC
 
 
 # Elasticsearch
-wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg
-wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.19.3-arm64.deb
-dpkg -i elasticsearch-8.19.3-arm64.deb
-systemctl daemon-reload
-systemctl enable elasticsearch.service
-systemctl start elasticsearch.service
-/usr/share/elasticsearch/bin/elasticsearch-users useradd wagtail -p wagtail -r superuser
-cp /etc/elasticsearch/certs/http_ca.crt /home/$DEV_USER/
-chown vagrant:vagrant /home/$DEV_USER/http_ca.crt
+ES_VERSION=8.19.3
+ES_DOWNLOAD_FILE=elasticsearch-$ES_VERSION-linux-`uname -p`.tar.gz
+ES_DOWNLOAD_URL=https://artifacts.elastic.co/downloads/elasticsearch/$ES_DOWNLOAD_FILE
+ES_ROOT=/home/$DEV_USER/elasticsearch-$ES_VERSION
+
+su - $DEV_USER -c "wget $ES_DOWNLOAD_URL -P /home/$DEV_USER"
+su - $DEV_USER -c "cd /home/$DEV_USER && tar xzf $ES_DOWNLOAD_FILE"
+su - $DEV_USER -c "$ES_ROOT/bin/elasticsearch-users useradd wagtail -p wagtail -r superuser"
 su - $DEV_USER -c "$PIP install 'elasticsearch>=8.0.0,<9.0.0'"

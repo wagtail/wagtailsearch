@@ -100,6 +100,8 @@ DATABASE_URL="mysql://vagrant:vagrant@localhost/wagtailsearch" python ./testmana
 To test under Elasticsearch 8:
 
 ```shell
+/home/vagrant/elasticsearch-8.19.3/bin/elasticsearch
+# then in another shell session:
 cd /vagrant/
-ELASTICSEARCH_URL="https://wagtail:wagtail@localhost:9200" ELASTICSEARCH_VERSION=8 ELASTICSEARCH_CA_CERTS=~/http_ca.crt python testmanage.py test
+ELASTICSEARCH_URL="https://wagtail:wagtail@localhost:9200" ELASTICSEARCH_VERSION=8 ELASTICSEARCH_CA_CERTS=~/elasticsearch-8.19.3/config/certs/http_ca.crt python testmanage.py test
 ```
