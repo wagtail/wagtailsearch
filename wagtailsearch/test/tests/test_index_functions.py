@@ -3,10 +3,8 @@ from unittest import mock
 
 from django.test import TestCase, override_settings
 
-from wagtail.models import Page
 from wagtailsearch import index
 from wagtailsearch.test import models
-from wagtail.test.testapp.models import SimplePage
 
 
 class TestGetIndexedInstance(TestCase):
@@ -66,22 +64,6 @@ class TestInsertOrUpdateObject(TestCase):
         index.insert_or_update_object(obj)
 
         self.assertFalse(backend().add.mock_calls)
-
-    def test_converts_to_specific_page(self, backend):
-        root_page = Page.objects.get(id=1)
-        page = root_page.add_child(
-            instance=SimplePage(title="test", slug="test", content="test")
-        )
-
-        # Convert page into a generic "Page" object and add it into the index
-        unspecific_page = page.page_ptr
-
-        backend().reset_mock()
-
-        index.insert_or_update_object(unspecific_page)
-
-        # It should be automatically converted back to the specific version
-        backend().add.assert_called_with(page)
 
     def test_catches_index_error(self, backend):
         obj = models.Book.objects.create(
