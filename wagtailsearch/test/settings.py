@@ -34,13 +34,6 @@ ALLOWED_HOSTS = ["localhost", "testserver"]
 INSTALLED_APPS = [
     "wagtailsearch",
     "wagtailsearch.test",
-    "wagtail",
-    "wagtail.test.testapp",
-    "wagtail.test.customuser",
-    "wagtail.images",
-    "wagtail.documents",
-    "wagtail.admin",
-    "wagtail.contrib.forms",
     "taggit",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -176,10 +169,3 @@ if "ELASTICSEARCH_URL" in os.environ:
             "ca_certs": os.environ.get("ELASTICSEARCH_CA_CERTS"),
         }
     }
-
-WAGTAILADMIN_RICH_TEXT_EDITORS = {
-    "default": {"WIDGET": "wagtail.admin.rich_text.DraftailRichTextArea"},
-    "custom": {"WIDGET": "wagtail.test.testapp.rich_text.CustomRichTextArea"},
-}
-
-AUTH_USER_MODEL = "customuser.CustomUser"

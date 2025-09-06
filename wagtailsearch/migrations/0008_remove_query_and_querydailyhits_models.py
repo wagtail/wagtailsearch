@@ -9,19 +9,4 @@ class Migration(migrations.Migration):
         ("wagtailsearch", "0007_delete_editorspick"),
     ]
 
-    operations = [
-        migrations.AlterUniqueTogether(
-            name="querydailyhits",
-            unique_together=None,
-        ),
-        migrations.RemoveField(
-            model_name="querydailyhits",
-            name="query",
-        ),
-        migrations.DeleteModel(
-            name="Query",
-        ),
-        migrations.DeleteModel(
-            name="QueryDailyHits",
-        ),
-    ]
+    operations = []

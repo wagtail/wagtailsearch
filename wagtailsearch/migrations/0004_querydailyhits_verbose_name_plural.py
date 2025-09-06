@@ -9,12 +9,4 @@ class Migration(migrations.Migration):
         ("wagtailsearch", "0003_remove_editors_pick"),
     ]
 
-    operations = [
-        migrations.AlterModelOptions(
-            name="querydailyhits",
-            options={
-                "verbose_name": "Query Daily Hits",
-                "verbose_name_plural": "Query Daily Hits",
-            },
-        ),
-    ]
+    operations = []
