@@ -10,7 +10,7 @@ __pycache__/
 /venv
 /.vscode
 /site
-/test_wagtail_search.db
+/test_wagtailsearch.db
 /node_modules
 /test-static
 /test-media
