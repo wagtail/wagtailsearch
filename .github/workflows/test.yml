@@ -33,8 +33,9 @@ jobs:
     needs: lint
     strategy:
       matrix:
-        python: '3.9'
-        django: 'Django>=4.2,<5'
+        include:
+          - python: '3.9'
+            django: 'Django>=4.2,<5'
 
     steps:
       - uses: actions/checkout@v4
@@ -55,10 +56,11 @@ jobs:
     needs: lint
     strategy:
       matrix:
-        python: '3.11'
-        django: 'Django>=5.1,<5.2'
-        postgres: 'postgres:15'
-        psycopg: 'psycopg>=3.2.9'
+        include:
+          - python: '3.11'
+            django: 'Django>=5.1,<5.2'
+            postgres: 'postgres:15'
+            psycopg: 'psycopg>=3.2.9'
 
     services:
       postgres:
