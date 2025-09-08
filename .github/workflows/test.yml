@@ -33,7 +33,8 @@ jobs:
     needs: lint
     strategy:
       matrix:
-        python: ['3.9', '3.10', '3.11', '3.12', '3.13']
+        python: '3.9'
+        django: 'Django>=4.2,<5'
 
     steps:
       - uses: actions/checkout@v4
@@ -45,17 +46,19 @@ jobs:
         run: |
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install .[ci]
+          pip install "${{ matrix.django }}"
       - name: Test
-        run: tox
-        env:
-          DB: sqlite
+        run: python testmanage.py test
 
   test-postgres:
     runs-on: ubuntu-latest
     needs: lint
     strategy:
       matrix:
-        python: ['3.9', '3.10', '3.11', '3.12', '3.13']
+        python: '3.11'
+        django: 'Django>=5.1,<5.2'
+        postgres: 'postgres:15'
+        psycopg: 'psycopg>=3.2.9'
 
     services:
       postgres:
@@ -75,9 +78,53 @@ jobs:
       - name: Install
         run: |
           python -m pip install --upgrade pip setuptools wheel
+          pip install "${{ matrix.psycopg }}"
           python -m pip install .[ci]
+          pip install "${{ matrix.django }}"
       - name: Test
-        run: tox
+        run: python testmanage.py test
         env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/wagtail_search
-          DB: postgres
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/wagtailsearch
+
+  test-mysql:
+    runs-on: ubuntu-latest
+    needs: lint
+    strategy:
+      matrix:
+        include:
+          - python: '3.10'
+            django: 'Django>=5.2,<5.3'
+            mysql: 'mysql:8.4'
+          - python: '3.12'
+            django: 'Django>=5.2,<5.3'
+            mysql: 'mariadb:11.4'
+
+    services:
+      mysql:
+        image: ${{ matrix.mysql || 'mysql:8.0' }}
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: wagtailsearch
+          HEALTH_CMD: ${{ startsWith(matrix.mysql, 'mariadb') && 'healthcheck.sh --connect --innodb_initialized' || 'mysqladmin --protocol=tcp ping' }}
+        ports:
+          - 3306:3306
+        options: --health-cmd=$HEALTH_CMD --health-interval=10s --health-timeout=5s --health-retries=3 --cap-add=sys_nice
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install mysqlclient
+          python -m pip install .[ci]
+          pip install "${{ matrix.django }}"
+      - name: Test
+        run: python testmanage.py test
+        env:
+          DATABASE_URL: mysql://root:root@localhost:3306/wagtailsearch
