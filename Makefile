@@ -10,7 +10,7 @@ coverage:
 	killall java
 
 	/home/vagrant/elasticsearch-8.19.3/bin/elasticsearch -q &
-	sleep 10
+	sleep 20
 	ELASTICSEARCH_URL="https://wagtail:wagtail@localhost:9200" ELASTICSEARCH_VERSION=8 ELASTICSEARCH_CA_CERTS=~/elasticsearch-8.19.3/config/certs/http_ca.crt ~/.virtualenvs/wagtailsearches8/bin/coverage run -p testmanage.py test
 	killall java
 

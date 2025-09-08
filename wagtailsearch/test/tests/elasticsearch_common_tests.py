@@ -4,8 +4,8 @@ from io import StringIO
 from django.core import management
 
 from wagtailsearch.query import MATCH_ALL
-from wagtailsearch.test.tests.test_backends import BackendTests
 from wagtailsearch.test import models
+from wagtailsearch.test.tests.test_backends import BackendTests
 
 
 class ElasticsearchCommonSearchBackendTests(BackendTests):

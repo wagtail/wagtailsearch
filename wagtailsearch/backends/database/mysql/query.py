@@ -1,4 +1,5 @@
 import re
+
 from typing import Any
 
 from django.db.backends.base.base import BaseDatabaseWrapper
@@ -110,9 +111,7 @@ class CombinedLexeme(LexemeCombinable):
             rsql, params = compiler.compile(self.rhs)
         value_params.extend(params)
 
-        combined_sql = "({}{} {}{})".format(
-            lhs_connector, lsql, rhs_connector, rsql
-        )  # if self.connector is '+' (AND), then both terms will be ANDed together. We need to repeat the connector to make that work.
+        combined_sql = f"({lhs_connector}{lsql} {rhs_connector}{rsql})"  # if self.connector is '+' (AND), then both terms will be ANDed together. We need to repeat the connector to make that work.
         combined_value = combined_sql % tuple(value_params)
         return "%s", [combined_value]
 
@@ -124,8 +123,8 @@ class SearchQueryCombinable:
     def _combine(self, other, connector: str, reversed: bool = False):
         if not isinstance(other, SearchQueryCombinable):
             raise TypeError(
-                "SearchQuery can only be combined with other SearchQuery "
-                "instances, got %s." % type(other).__name__
+                f"SearchQuery can only be combined with other SearchQuery "
+                f"instances, got {type(other).__name__}."
             )
         if reversed:
             return CombinedSearchQuery(other, connector, self)
@@ -160,7 +159,7 @@ class SearchQuery(SearchQueryCombinable, Expression):
                 r"\W+", " ", value
             )  # Remove non-word characters. This is done to disallow the usage of full text search operators in the MATCH clause, because MySQL doesn't include these kinds of characters in FULLTEXT indexes.
             self.value = Value(
-                '"%s"' % safe_string
+                f'"{safe_string}"'
             )  # We wrap it in quotes to make sure it's parsed as a phrase
         else:  # Otherwise, we assume it's a lexeme
             self.value = value
@@ -181,9 +180,6 @@ class SearchQuery(SearchQueryCombinable, Expression):
 class CombinedSearchQuery(SearchQueryCombinable, CombinedExpression):
     def __init__(self, lhs, connector, rhs, output_field=None):
         super().__init__(lhs, connector, rhs, output_field)
-
-    def __str__(self):
-        return "%s" % super().__str__()
 
     def as_sql(self, compiler, connection):
         value_params = []
@@ -219,9 +215,7 @@ class CombinedSearchQuery(SearchQueryCombinable, CombinedExpression):
             rsql, params = compiler.compile(self.rhs)
         value_params.extend(params)
 
-        combined_sql = "({}{} {}{})".format(
-            lhs_connector, lsql, rhs_connector, rsql
-        )  # if self.connector is '+' (AND), then both terms will be ANDed together. We need to repeat the connector to make that work.
+        combined_sql = f"({lhs_connector}{lsql} {rhs_connector}{rsql})"  # if self.connector is '+' (AND), then both terms will be ANDed together. We need to repeat the connector to make that work.
         combined_value = combined_sql % tuple(value_params)
         return "%s", [combined_value]
 
@@ -234,9 +228,9 @@ class MatchExpression(Expression):
         self,
         query: SearchQueryCombinable,
         columns: list[str] = None,
-        output_field: Field = BooleanField(),
+        output_field: Field = None,
     ) -> None:
-        super().__init__(output_field=output_field)
+        super().__init__(output_field=output_field or BooleanField())
         self.query = query
         self.columns = (
             columns

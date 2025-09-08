@@ -7,6 +7,7 @@ from django.db import transaction
 from wagtailsearch.backends import get_search_backend
 from wagtailsearch.index import get_indexed_models
 
+
 DEFAULT_CHUNK_SIZE = 1000
 
 
@@ -23,12 +24,10 @@ def group_models_by_index(backend, models):
     separate from other content types (eg, images and documents) to prevent
     field mapping collisions:
 
-    >>> group_models_by_index(elasticsearch2_backend, [
-    ...     wagtailcore.Page,
-    ...     myapp.HomePage,
-    ...     myapp.StandardPage,
-    ...     wagtailimages.Image
-    ... ])
+    >>> group_models_by_index(
+    ...     elasticsearch2_backend,
+    ...     [wagtailcore.Page, myapp.HomePage, myapp.StandardPage, wagtailimages.Image],
+    ... )
     {
         <Index wagtailcore_page>: [wagtailcore.Page, myapp.HomePage, myapp.StandardPage],
         <Index wagtailimages_image>: [wagtailimages.Image],
@@ -67,7 +66,7 @@ class Command(BaseCommand):
         backend = get_search_backend(backend_name)
 
         if not backend.rebuilder_class:
-            self.write("Backend '%s' doesn't require rebuilding" % backend_name)
+            self.write(f"Backend '{backend_name}' doesn't require rebuilding")
             return
 
         models_grouped_by_index = group_models_by_index(
@@ -77,7 +76,7 @@ class Command(BaseCommand):
             self.write(backend_name + ": No indices to rebuild")
 
         for index, models in models_grouped_by_index:
-            self.write(backend_name + ": Rebuilding index %s" % index.name)
+            self.write(f"{backend_name}: Rebuilding index {index.name}")
 
             # Start rebuild
             rebuilder = backend.rebuilder_class(index)
@@ -92,9 +91,9 @@ class Command(BaseCommand):
             if not schema_only:
                 for model in models:
                     self.write(
-                        "{}: {}.{} ".format(
-                            backend_name, model._meta.app_label, model.__name__
-                        ).ljust(35),
+                        f"{backend_name}: {model._meta.app_label}.{model.__name__} ".ljust(
+                            35
+                        ),
                         ending="",
                     )
 
@@ -112,7 +111,7 @@ class Command(BaseCommand):
             # Finish rebuild
             rebuilder.finish()
 
-            self.write(backend_name + ": indexed %d objects" % object_count)
+            self.write(f"{backend_name}: indexed {object_count} objects")
             self.print_newline()
 
     def add_arguments(self, parser):

@@ -1,4 +1,5 @@
 import unittest
+
 from unittest import skip
 
 from django.db import connection
@@ -6,8 +7,8 @@ from django.test.testcases import TransactionTestCase
 from django.test.utils import override_settings
 
 from wagtailsearch.query import Not, PlainText
-from wagtailsearch.test.tests.test_backends import BackendTests
 from wagtailsearch.test import models
+from wagtailsearch.test.tests.test_backends import BackendTests
 
 
 @unittest.skipUnless(connection.vendor == "mysql", "The current database is not MySQL")

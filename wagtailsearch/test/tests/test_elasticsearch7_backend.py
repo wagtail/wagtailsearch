@@ -1,6 +1,7 @@
 import datetime
 import json
 import unittest
+
 from unittest import mock
 
 from django.db.models import Q
@@ -10,6 +11,7 @@ from wagtailsearch.query import MATCH_ALL, Fuzzy, Phrase
 from wagtailsearch.test import models
 
 from .elasticsearch_common_tests import ElasticsearchCommonSearchBackendTests
+
 
 try:
     from elasticsearch import VERSION as ELASTICSEARCH_VERSION

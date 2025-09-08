@@ -5,8 +5,8 @@ from django.test import TestCase
 from django.test.utils import override_settings
 
 from wagtailsearch.query import Phrase
-from wagtailsearch.test.tests.test_backends import BackendTests
 from wagtailsearch.test import models
+from wagtailsearch.test.tests.test_backends import BackendTests
 
 
 @unittest.skipUnless(

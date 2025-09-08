@@ -1,4 +1,6 @@
 import datetime
+import os
+
 from warnings import warn
 
 from django.db.models import OrderBy
@@ -48,9 +50,11 @@ class BaseSearchQueryCompiler:
     ):
         self.queryset = queryset
         if query is None:
+            file_root = os.path.dirname(__file__)
             warn(
                 "Querying `None` is deprecated, use `MATCH_ALL` instead.",
-                DeprecationWarning,
+                Warning,
+                skip_file_prefixes=(file_root,),
             )
             query = MATCH_ALL
         elif isinstance(query, str):
@@ -371,7 +375,7 @@ class BaseSearchResults:
         data = list(self[:21])
         if len(data) > 20:
             data[-1] = "...(remaining elements truncated)..."
-        return "<SearchResults %r>" % data
+        return f"<SearchResults {data!r}>"
 
     def annotate_score(self, field_name):
         clone = self._clone()

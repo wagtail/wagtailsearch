@@ -2,6 +2,7 @@ import warnings
 
 from django.db import connection
 
+
 USE_SQLITE_FTS = None  # True if sqlite FTS is available, False if not, None if untested
 
 
@@ -31,7 +32,8 @@ def SearchBackend(params):
                     "The installed SQLite library supports full-text search, but the table for storing "
                     "searchable content is missing. This probably means SQLite was upgraded after the "
                     "migration was applied. To enable full-text search, reapply wagtailsearch migration 0006 "
-                    "or create the table manually."
+                    "or create the table manually.",
+                    stacklevel=2,
                 )
             else:
                 USE_SQLITE_FTS = True

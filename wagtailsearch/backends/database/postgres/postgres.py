@@ -1,4 +1,6 @@
+import os
 import warnings
+
 from collections import OrderedDict
 from functools import reduce
 
@@ -34,6 +36,7 @@ from ...base import (
 )
 from .query import Lexeme
 from .weights import get_sql_weights, get_weight
+
 
 EMPTY_VECTOR = SearchVector(Value("", output_field=TextField()))
 
@@ -298,16 +301,15 @@ class Index:
 
         with self.write_connection.cursor() as cursor:
             cursor.execute(
-                """
-                INSERT INTO %s (content_type_id, object_id, title, autocomplete, body, title_norm)
-                (VALUES %s)
+                f"""
+                INSERT INTO {IndexEntry._meta.db_table} (content_type_id, object_id, title, autocomplete, body, title_norm)
+                (VALUES {data_sql})
                 ON CONFLICT (content_type_id, object_id)
                 DO UPDATE SET title = EXCLUDED.title,
                               title_norm = 1.0,
                               autocomplete = EXCLUDED.autocomplete,
                               body = EXCLUDED.body
-                """
-                % (IndexEntry._meta.db_table, data_sql),
+                """,
                 data_params,
             )
 
@@ -401,7 +403,8 @@ class PostgresSearchQueryCompiler(BaseSearchQueryCompiler):
         elif isinstance(query, Boost):
             # Not supported
             msg = "The Boost query is not supported by the PostgreSQL search backend."
-            warnings.warn(msg, RuntimeWarning)
+            file_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+            warnings.warn(msg, RuntimeWarning, skip_file_prefixes=(file_root,))
 
             return self.build_tsquery_content(
                 query.subquery, config=config, invert=invert
@@ -444,8 +447,7 @@ class PostgresSearchQueryCompiler(BaseSearchQueryCompiler):
                 return reduce(lambda a, b: a | b, subquery_lexemes)
 
         raise NotImplementedError(
-            "`%s` is not supported by the PostgreSQL search backend."
-            % query.__class__.__name__
+            f"`{query.__class__.__name__}` is not supported by the PostgreSQL search backend."
         )
 
     def build_tsquery(self, query, config=None):
@@ -484,8 +486,7 @@ class PostgresSearchQueryCompiler(BaseSearchQueryCompiler):
             ) / (len(query.subqueries) or 1)
 
         raise NotImplementedError(
-            "`%s` is not supported by the PostgreSQL search backend."
-            % query.__class__.__name__
+            f"`{query.__class__.__name__}` is not supported by the PostgreSQL search backend."
         )
 
     def get_index_vectors(self, search_query):
@@ -538,7 +539,7 @@ class PostgresSearchQueryCompiler(BaseSearchQueryCompiler):
         rank_expression = self._build_rank_expression(vectors, config)
 
         combined_vector = vectors[0][0]
-        for vector, boost in vectors[1:]:
+        for vector, _boost in vectors[1:]:
             combined_vector = combined_vector._combine(vector, "||", False)
 
         queryset = self.queryset.annotate(_vector_=combined_vector).filter(

@@ -1,4 +1,5 @@
 import unittest
+
 from collections import OrderedDict
 from datetime import date
 from io import StringIO
@@ -49,7 +50,7 @@ class BackendTests:
         else:
             # no conf entry found - skip tests for this backend
             raise unittest.SkipTest(
-                "No WAGTAILSEARCH_BACKENDS entry for the backend %s" % self.backend_path
+                f"No WAGTAILSEARCH_BACKENDS entry for the backend {self.backend_path}"
             )
 
         # HACK: This is a hack to delete all the index entries that may be present in the test database before each test is run.
@@ -733,7 +734,7 @@ class BackendTests:
         index = self.backend.get_index_for_model(models.Book)
         for i in range(10):
             obj = models.Book.objects.create(
-                title="Rank %s" % i,
+                title=f"Rank {i}",
                 publication_date=date(2017, 10, 18),
                 number_of_pages=100,
             )
@@ -743,7 +744,7 @@ class BackendTests:
 
         results = self.backend.search("Rank", models.Book)
         results_across_pages = set()
-        for i, obj in enumerate(same_rank_objects):
+        for i, _obj in enumerate(same_rank_objects):
             results_across_pages.add(results[i : i + 1][0])
         self.assertSetEqual(results_across_pages, same_rank_objects)
 
@@ -1013,9 +1014,7 @@ class TestBackendLoader(TestCase):
     @mock.patch("wagtailsearch.backends.database.connection")
     def test_import_by_full_path_unknown_db_vendor(self, connection):
         connection.vendor = "unknown"
-        db = get_search_backend(
-            backend="wagtailsearch.backends.database.SearchBackend"
-        )
+        db = get_search_backend(backend="wagtailsearch.backends.database.SearchBackend")
         self.assertIsInstance(db, DatabaseSearchBackend)
 
     @unittest.skipIf(
@@ -1051,9 +1050,7 @@ class TestBackendLoader(TestCase):
             PostgresSearchBackend,
         )
 
-        db = get_search_backend(
-            backend="wagtailsearch.backends.database.SearchBackend"
-        )
+        db = get_search_backend(backend="wagtailsearch.backends.database.SearchBackend")
         self.assertIsInstance(db, PostgresSearchBackend)
 
     @unittest.skipIf(
@@ -1080,9 +1077,7 @@ class TestBackendLoader(TestCase):
     def test_import_by_full_path_mysql_db_vendor(self):
         from wagtailsearch.backends.database.mysql.mysql import MySQLSearchBackend
 
-        db = get_search_backend(
-            backend="wagtailsearch.backends.database.SearchBackend"
-        )
+        db = get_search_backend(backend="wagtailsearch.backends.database.SearchBackend")
         self.assertIsInstance(db, MySQLSearchBackend)
 
     @unittest.skipIf(

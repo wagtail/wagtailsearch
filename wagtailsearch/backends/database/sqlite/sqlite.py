@@ -425,8 +425,7 @@ class SQLiteSearchQueryCompiler(BaseSearchQueryCompiler):
                 return reduce(lambda a, b: a | b, subquery_lexemes)
 
         raise NotImplementedError(
-            "`%s` is not supported by the SQLite search backend."
-            % query.__class__.__name__
+            f"`{query.__class__.__name__}` is not supported by the SQLite search backend."
         )
 
     def build_search_query(self, query, config=None):
@@ -466,8 +465,7 @@ class SQLiteSearchQueryCompiler(BaseSearchQueryCompiler):
             ) / (len(query.subqueries) or 1)
 
         raise NotImplementedError(
-            "`%s` is not supported by the SQLite search backend."
-            % query.__class__.__name__
+            f"`{query.__class__.__name__}` is not supported by the SQLite search backend."
         )
 
     def get_index_vectors(self):
@@ -521,7 +519,7 @@ class SQLiteSearchQueryCompiler(BaseSearchQueryCompiler):
         ][
             0
         ]  # We create a combined vector for the search results queryset. We start with the first vector and build from there.
-        for vector, boost in vectors[1:]:
+        for vector, _boost in vectors[1:]:
             combined_vector = combined_vector._combine(
                 vector, " ", False
             )  # We add the subsequent vectors to the combined vector.

@@ -167,5 +167,5 @@ if "ELASTICSEARCH_URL" in os.environ:
         "INDEX_SETTINGS": {"settings": {"index": {"number_of_shards": 1}}},
         "OPTIONS": {
             "ca_certs": os.environ.get("ELASTICSEARCH_CA_CERTS"),
-        }
+        },
     }

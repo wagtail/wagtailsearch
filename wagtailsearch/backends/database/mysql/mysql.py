@@ -1,5 +1,7 @@
+import os
 import re
 import warnings
+
 from collections import OrderedDict
 
 from django.db import (
@@ -372,7 +374,8 @@ class MySQLSearchQueryCompiler(BaseSearchQueryCompiler):
         elif isinstance(query, Boost):
             # Not supported
             msg = "The Boost query is not supported by the MySQL search backend."
-            warnings.warn(msg, RuntimeWarning)
+            file_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+            warnings.warn(msg, RuntimeWarning, skip_file_prefixes=(file_root,))
 
             return self.build_search_query_content(query.subquery, invert=invert)
 
@@ -411,8 +414,7 @@ class MySQLSearchQueryCompiler(BaseSearchQueryCompiler):
                 return balanced_reduce(lambda a, b: a | b, subquery_lexemes)
 
         raise NotImplementedError(
-            "`%s` is not supported by the MySQL search backend."
-            % query.__class__.__name__
+            f"`{query.__class__.__name__}` is not supported by the MySQL search backend."
         )
 
     def build_search_query(self, query):

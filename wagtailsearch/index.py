@@ -10,6 +10,7 @@ from modelcluster.fields import ParentalManyToManyField
 
 from wagtailsearch.backends import get_search_backends_with_name
 
+
 logger = logging.getLogger("wagtail.search.index")
 
 
@@ -284,7 +285,7 @@ class BaseField:
             return value
         except FieldDoesNotExist:
             value = getattr(obj, self.field_name, None)
-            if hasattr(value, "__call__"):
+            if callable(value):
                 value = value()
             return value
 

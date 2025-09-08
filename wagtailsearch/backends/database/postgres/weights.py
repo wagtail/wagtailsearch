@@ -5,6 +5,7 @@ from django.apps import apps
 from wagtailsearch.index import Indexed
 from wagtailsearch.utils import get_search_fields
 
+
 # This file contains the implementation of weights for PostgreSQL tsvectors. Only PostgreSQL has support for them, so that's why we define them here.
 
 

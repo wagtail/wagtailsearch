@@ -1,4 +1,5 @@
 import uuid
+
 from django.db import models
 from modelcluster.fields import ParentalKey
 from modelcluster.models import ClusterableModel
@@ -48,6 +49,9 @@ class Book(index.Indexed, models.Model):
         index.FilterField("tags"),
     ]
 
+    def __str__(self):
+        return self.title
+
     @classmethod
     def get_indexed_objects(cls):
         indexed_objects = super().get_indexed_objects()
@@ -74,9 +78,6 @@ class Book(index.Indexed, models.Model):
 
         # Return the novel/programming guide object if there is one, otherwise return self
         return novel or programming_guide or self
-
-    def __str__(self):
-        return self.title
 
 
 class Character(models.Model):
@@ -139,6 +140,9 @@ class UnindexedBook(index.Indexed, models.Model):
 
     search_fields = []
 
+    def __str__(self):
+        return self.title
+
 
 class Advert(models.Model):
     text = models.CharField(max_length=255)
@@ -150,6 +154,9 @@ class Advert(models.Model):
 class BlogCategory(models.Model):
     name = models.CharField(unique=True, max_length=80)
 
+    def __str__(self):
+        return self.name
+
 
 class BlogCategoryBlogPage(models.Model):
     category = models.ForeignKey(
@@ -158,6 +165,9 @@ class BlogCategoryBlogPage(models.Model):
     page = ParentalKey(
         "ManyToManyBlogPage", related_name="categories", on_delete=models.CASCADE
     )
+
+    def __str__(self):
+        return f"BlogCategoryBlogPage: {self.category} - {self.page}"
 
 
 class ManyToManyBlogPage(ClusterableModel):
@@ -175,7 +185,7 @@ class AdvertWithCustomUUIDPrimaryKey(index.Indexed, models.Model):
 
     def __str__(self):
         return self.text
-    
+
 
 class Document(index.Indexed, models.Model):
     title = models.CharField(max_length=255)

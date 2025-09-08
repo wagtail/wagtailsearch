@@ -1,4 +1,5 @@
 import json
+
 from collections import OrderedDict
 from copy import deepcopy
 from urllib.parse import urlparse
@@ -30,6 +31,7 @@ from wagtailsearch.index import (
 )
 from wagtailsearch.query import And, Boost, Fuzzy, MatchAll, Not, Or, Phrase, PlainText
 from wagtailsearch.utils import deep_update
+
 
 use_new_elasticsearch_api = ELASTICSEARCH_VERSION >= (7, 15)
 
@@ -700,8 +702,7 @@ class Elasticsearch7SearchQueryCompiler(BaseSearchQueryCompiler):
 
         else:
             raise NotImplementedError(
-                "`%s` is not supported by the Elasticsearch search backend."
-                % query.__class__.__name__
+                f"`{query.__class__.__name__}` is not supported by the Elasticsearch search backend."
             )
 
     def get_inner_query(self):
@@ -1053,8 +1054,7 @@ class ElasticsearchAutocompleteQueryCompilerImpl:
             return {"match_all": {}}
         else:
             raise NotImplementedError(
-                "`%s` is not supported for autocomplete queries."
-                % self.query.__class__.__name__
+                f"`{self.query.__class__.__name__}` is not supported for autocomplete queries."
             )
 
 

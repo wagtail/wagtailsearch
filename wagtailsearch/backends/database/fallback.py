@@ -1,3 +1,5 @@
+import os
+
 from collections import OrderedDict
 from warnings import warn
 
@@ -14,6 +16,7 @@ from wagtailsearch.backends.base import (
 )
 from wagtailsearch.query import And, Boost, MatchAll, Not, Or, Phrase, PlainText
 from wagtailsearch.utils import AND, OR
+
 
 # This file implements a database search backend using basic substring matching, and no
 # database-specific full-text search capabilities. It will be used in the following cases:
@@ -81,7 +84,11 @@ class DatabaseSearchQueryCompiler(BaseSearchQueryCompiler):
 
     def check_boost(self, query, boost=1.0):
         if query.boost * boost != 1.0:
-            warn("Database search backend does not support term boosting.")
+            file_root = os.path.dirname(os.path.dirname(__file__))
+            warn(
+                "Database search backend does not support term boosting.",
+                skip_file_prefixes=(file_root,),
+            )
 
     def build_database_filter(self, query, boost=1.0):
         if isinstance(query, PlainText):
@@ -152,8 +159,7 @@ class DatabaseSearchQueryCompiler(BaseSearchQueryCompiler):
             return OR(subqueries)
 
         raise NotImplementedError(
-            "`%s` is not supported by the database search backend."
-            % query.__class__.__name__
+            f"`{query.__class__.__name__}` is not supported by the database search backend."
         )
 
 

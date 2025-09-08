@@ -1,8 +1,8 @@
 from django.db import connection, migrations
 
+
 # This migration takes on the base model defined in 0005_create_indexentry and adds certain fields that are specific to each database system
 class Migration(migrations.Migration):
-
     dependencies = [
         ("wagtailsearch", "0008_remove_query_and_querydailyhits_models"),
     ]
