@@ -90,7 +90,6 @@ jobs:
 
   test-mysql:
     runs-on: ubuntu-latest
-    continue-on-error: true
     needs: lint
     strategy:
       matrix:
@@ -130,4 +129,4 @@ jobs:
       - name: Test
         run: python testmanage.py test
         env:
-          DATABASE_URL: mysql://root:root@localhost:3306/wagtailsearch
+          DATABASE_URL: mysql://root:root@127.0.0.1:3306/wagtailsearch
