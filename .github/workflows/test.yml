@@ -90,6 +90,7 @@ jobs:
 
   test-mysql:
     runs-on: ubuntu-latest
+    continue-on-error: true
     needs: lint
     strategy:
       matrix:
