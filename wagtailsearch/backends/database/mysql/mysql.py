@@ -1,4 +1,3 @@
-import os
 import re
 import warnings
 
@@ -374,8 +373,7 @@ class MySQLSearchQueryCompiler(BaseSearchQueryCompiler):
         elif isinstance(query, Boost):
             # Not supported
             msg = "The Boost query is not supported by the MySQL search backend."
-            file_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-            warnings.warn(msg, RuntimeWarning, skip_file_prefixes=(file_root,))
+            warnings.warn(msg, RuntimeWarning, stacklevel=2)
 
             return self.build_search_query_content(query.subquery, invert=invert)
 

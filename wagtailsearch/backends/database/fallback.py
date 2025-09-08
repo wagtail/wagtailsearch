@@ -1,5 +1,3 @@
-import os
-
 from collections import OrderedDict
 from warnings import warn
 
@@ -84,10 +82,9 @@ class DatabaseSearchQueryCompiler(BaseSearchQueryCompiler):
 
     def check_boost(self, query, boost=1.0):
         if query.boost * boost != 1.0:
-            file_root = os.path.dirname(os.path.dirname(__file__))
             warn(
                 "Database search backend does not support term boosting.",
-                skip_file_prefixes=(file_root,),
+                stacklevel=7,
             )
 
     def build_database_filter(self, query, boost=1.0):

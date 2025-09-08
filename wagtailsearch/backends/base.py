@@ -1,5 +1,4 @@
 import datetime
-import os
 
 from warnings import warn
 
@@ -50,11 +49,10 @@ class BaseSearchQueryCompiler:
     ):
         self.queryset = queryset
         if query is None:
-            file_root = os.path.dirname(__file__)
             warn(
                 "Querying `None` is deprecated, use `MATCH_ALL` instead.",
                 Warning,
-                skip_file_prefixes=(file_root,),
+                stacklevel=5,
             )
             query = MATCH_ALL
         elif isinstance(query, str):

@@ -1,4 +1,3 @@
-import os
 import warnings
 
 from collections import OrderedDict
@@ -403,8 +402,7 @@ class PostgresSearchQueryCompiler(BaseSearchQueryCompiler):
         elif isinstance(query, Boost):
             # Not supported
             msg = "The Boost query is not supported by the PostgreSQL search backend."
-            file_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-            warnings.warn(msg, RuntimeWarning, skip_file_prefixes=(file_root,))
+            warnings.warn(msg, RuntimeWarning, stacklevel=2)
 
             return self.build_tsquery_content(
                 query.subquery, config=config, invert=invert
