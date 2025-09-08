@@ -6,7 +6,6 @@ from django.db.models.fields import TextField
 from django.db.models.fields.related import OneToOneField
 from django.db.models.functions import Cast
 from django.db.models.sql.where import WhereNode
-from django.utils.translation import gettext_lazy as _
 
 from .index import class_is_indexed
 from .utils import get_descendants_content_types_pks
@@ -62,8 +61,8 @@ class BaseIndexEntry(models.Model):
 
     class Meta:
         unique_together = ("content_type", "object_id")
-        verbose_name = _("index entry")
-        verbose_name_plural = _("index entries")
+        verbose_name = "index entry"
+        verbose_name_plural = "index entries"
         abstract = True
 
     def __str__(self):

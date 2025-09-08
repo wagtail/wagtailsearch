@@ -1,7 +1,6 @@
 from django.apps import AppConfig
 from django.core.checks import Tags, Warning, register
 from django.db import connection
-from django.utils.translation import gettext_lazy as _
 
 from wagtailsearch.signal_handlers import register_signal_handlers
 
@@ -9,7 +8,7 @@ from wagtailsearch.signal_handlers import register_signal_handlers
 class WagtailSearchAppConfig(AppConfig):
     name = "wagtailsearch"
     label = "wagtailsearch"
-    verbose_name = _("Wagtail search")
+    verbose_name = "Wagtail search"
     default_auto_field = "django.db.models.AutoField"
 
     def ready(self):
