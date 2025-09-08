@@ -134,6 +134,7 @@ jobs:
 
   test-sqlite-elasticsearch8:
     runs-on: ubuntu-latest
+    needs: lint
     strategy:
       matrix:
         include:
@@ -174,6 +175,7 @@ jobs:
 
   test-postgres-elasticsearch7:
     runs-on: ubuntu-latest
+    needs: lint
     strategy:
       matrix:
         include:
@@ -217,10 +219,11 @@ jobs:
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/wagtailsearch
           ELASTICSEARCH_URL: http://localhost:9200
-          ELASTICSEARCH_VERSION: 8
+          ELASTICSEARCH_VERSION: 7
 
   test-sqlite-opensearch2:
     runs-on: ubuntu-latest
+    needs: lint
     strategy:
       matrix:
         include:
