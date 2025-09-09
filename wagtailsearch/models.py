@@ -140,6 +140,7 @@ elif connection.vendor == "sqlite":
 
             class Meta:
                 db_table = "wagtailsearch_indexentry_fts"
+                app_label = "wagtailsearch"
 
             def __str__(self):
                 return f"SQLiteFTSIndexEntry: {self.index_entry}"
@@ -176,3 +177,4 @@ class IndexEntry(AbstractIndexEntry):
         """
 
         abstract = False
+        app_label = "wagtailsearch"
