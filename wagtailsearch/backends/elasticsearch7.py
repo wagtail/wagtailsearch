@@ -432,8 +432,9 @@ class Elasticsearch7Index(BaseIndex):
             action.update(mapping.get_document(item))
             actions.append(action)
 
-        # Run the actions
-        bulk(self.es, actions, index=self.name)
+        if actions:
+            # Run the actions
+            bulk(self.es, actions, index=self.name)
 
     def delete_item(self, item):
         # Make sure the object can be indexed
