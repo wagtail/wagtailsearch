@@ -239,9 +239,6 @@ class DatabaseSearchBackend(BaseSearchBackend):
     def add_type(self, model):
         pass  # Not needed
 
-    def refresh_index(self):
-        pass  # Not needed
-
     def add(self, obj):
         pass  # Not needed
 

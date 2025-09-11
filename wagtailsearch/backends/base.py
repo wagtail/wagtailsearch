@@ -457,13 +457,24 @@ class BaseSearchBackend:
     def add_type(self, model):
         self.get_index_for_model(model).add_model(model)
 
-    def refresh_index(self):
-        refreshed_indexes = []
+    def all_indexes(self):
+        """
+        Returns a list of all indexes used by this backend.
+        """
+        seen_indexes = []
         for model in get_indexed_models():
             index = self.get_index_for_model(model)
-            if index not in refreshed_indexes:
-                index.refresh()
-                refreshed_indexes.append(index)
+            if index not in seen_indexes:
+                seen_indexes.append(index)
+        return seen_indexes
+
+    def refresh_index(self):
+        """
+        Refreshes all indexes used by this backend. This performs any housekeeping required by the index so that recently-updated data is visible to searches.
+        Not all backends require this - for the ones that don't, this is a null operation.
+        """
+        for index in self.all_indexes():
+            index.refresh()
 
     def add(self, obj):
         self.get_index_for_model(type(obj)).add_item(obj)
