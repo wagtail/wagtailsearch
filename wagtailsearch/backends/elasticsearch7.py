@@ -14,6 +14,7 @@ from elasticsearch import Elasticsearch, NotFoundError
 from elasticsearch.helpers import bulk
 
 from wagtailsearch.backends.base import (
+    BaseIndex,
     BaseSearchBackend,
     BaseSearchQueryCompiler,
     BaseSearchResults,
@@ -316,9 +317,9 @@ class Elasticsearch7Mapping:
         return f"<ElasticsearchMapping: {self.model.__name__}>"
 
 
-class Elasticsearch7Index:
+class Elasticsearch7Index(BaseIndex):
     def __init__(self, backend, name):
-        self.backend = backend
+        super().__init__(backend)
         self.es = backend.es
         self.mapping_class = backend.mapping_class
         self.name = name

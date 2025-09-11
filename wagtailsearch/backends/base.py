@@ -399,12 +399,15 @@ class EmptySearchResults(BaseSearchResults):
         return 0
 
 
-class NullIndex:
+class BaseIndex:
     """
-    Index class that provides do-nothing implementations of the indexing operations required by
-    BaseSearchBackend. Use this for search backends that do not maintain an index, such as the
-    database backend.
+    Index class that provides do-nothing implementations of the indexing operations required by BaseSearchBackend. Use this directly
+    for search backends that do not maintain an index, such as the fallback database backend. Subclass it for backends that need to
+    do something.
     """
+
+    def __init__(self, backend):
+        self.backend = backend
 
     def add_model(self, model):
         pass
@@ -425,6 +428,7 @@ class NullIndex:
 class BaseSearchBackend:
     query_compiler_class = None
     autocomplete_query_compiler_class = None
+    index_class = BaseIndex
     results_class = None
     rebuilder_class = None
     catch_indexing_errors = False
@@ -436,11 +440,10 @@ class BaseSearchBackend:
     def _index(self):
         """
         Returns the index for the search backend. By default this is a null index that does nothing. Backends that use a single index for all models
-        should override this method to return a specific index. Backends that use different indexes for different models should override
-        get_index_for_model() instead. Code outside of the backends themselves should not use this method, and should call get_index_for_model(model)
-        instead.
+        should override index_class. Backends that use different indexes for different models should override get_index_for_model() instead.
+        Code outside of the backends themselves should not use this property, and should call get_index_for_model(model) instead.
         """
-        return NullIndex()
+        return self.index_class(self)
 
     def get_index_for_model(self, model):
         """
