@@ -454,9 +454,6 @@ class BaseSearchBackend:
         """
         return self._index
 
-    def get_rebuilder(self):
-        return None
-
     def add_type(self, model):
         self.get_index_for_model(model).add_model(model)
 

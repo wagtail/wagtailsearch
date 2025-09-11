@@ -1270,11 +1270,5 @@ class Elasticsearch7SearchBackend(BaseSearchBackend):
 
         return self._indexes_by_name[index_name]
 
-    def get_index(self):
-        return self.index_class(self, self.index_name)
-
-    def get_rebuilder(self):
-        return self.rebuilder_class(self.get_index())
-
 
 SearchBackend = Elasticsearch7SearchBackend
