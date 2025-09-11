@@ -994,6 +994,16 @@ class BackendTests:
         )
         self.assertFalse(stdout.getvalue())
 
+    def test_get_index_for_same_model_compares_as_equal(self):
+        """
+        If two results from get_index_for_model refer to the same index, they should compare as equal.
+        BaseSearchBackend.refresh_index implicitly relies on this to avoid refreshing the same index
+        multiple times.
+        """
+        index1 = self.backend.get_index_for_model(models.Book)
+        index2 = self.backend.get_index_for_model(models.Book)
+        self.assertEqual(index1, index2)
+
 
 @override_settings(
     WAGTAILSEARCH_BACKENDS={"default": {"BACKEND": "wagtailsearch.backends.database"}}

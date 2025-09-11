@@ -8,6 +8,7 @@ from django.test.testcases import TestCase
 from django.test.utils import override_settings
 
 from wagtailsearch.backends.database.sqlite.utils import fts5_available
+from wagtailsearch.test import models
 from wagtailsearch.test.tests.test_backends import BackendTests
 
 
@@ -51,3 +52,8 @@ class TestSQLiteSearchBackend(BackendTests, TestCase):
     @skip("The SQLite backend doesn't guarantee correct ranking of results.")
     def test_ranking(self):
         return super().test_ranking()
+
+    def test_all_models_use_same_index(self):
+        index1 = self.backend.get_index_for_model(models.Author)
+        index2 = self.backend.get_index_for_model(models.Book)
+        self.assertEqual(index1, index2)

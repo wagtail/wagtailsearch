@@ -3,6 +3,8 @@ import unittest
 from django.test import TestCase
 from django.test.utils import override_settings
 
+from wagtailsearch.test import models
+
 from .test_backends import BackendTests
 
 
@@ -60,3 +62,8 @@ class TestDBBackend(BackendTests, TestCase):
     @unittest.expectedFailure
     def test_boost(self):
         super().test_boost()
+
+    def test_all_models_use_same_index(self):
+        index1 = self.backend.get_index_for_model(models.Author)
+        index2 = self.backend.get_index_for_model(models.Book)
+        self.assertEqual(index1, index2)

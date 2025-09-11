@@ -714,7 +714,8 @@ class PostgresSearchBackend(BaseSearchBackend):
         if params.get("ATOMIC_REBUILD", False):
             self.rebuilder_class = self.atomic_rebuilder_class
 
-    def get_index_for_model(self, model):
+    @cached_property
+    def _index(self):
         return Index(self)
 
     def get_index_for_object(self, obj):

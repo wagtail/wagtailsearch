@@ -8,6 +8,7 @@ from django.db.models.functions.datetime import ExtractYear
 from django.db.models.lookups import Lookup
 from django.db.models.query import QuerySet
 from django.db.models.sql.where import NothingNode, WhereNode
+from django.utils.functional import cached_property
 
 from wagtailsearch.index import class_is_indexed, get_indexed_models
 from wagtailsearch.query import MATCH_ALL, PlainText
@@ -431,8 +432,21 @@ class BaseSearchBackend:
     def __init__(self, params):
         pass
 
-    def get_index_for_model(self, model):
+    @cached_property
+    def _index(self):
+        """
+        Returns the index for the search backend. By default this is a null index that does nothing. Backends that use a single index for all models
+        should override this method to return a specific index. Backends that use different indexes for different models should override
+        get_index_for_model() instead. Code outside of the backends themselves should not use this method, and should call get_index_for_model(model)
+        instead.
+        """
         return NullIndex()
+
+    def get_index_for_model(self, model):
+        """
+        Returns the index to be used for the given model.
+        """
+        return self._index
 
     def get_rebuilder(self):
         return None

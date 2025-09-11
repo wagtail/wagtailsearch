@@ -249,3 +249,13 @@ class ElasticsearchCommonSearchBackendTests(BackendTests):
         in_jan = models.Book.objects.filter(publication_date__month=1)
         with self.assertRaises(FilterError):
             self.backend.search(MATCH_ALL, in_jan)
+
+    def test_models_with_same_base_model_use_same_index(self):
+        index1 = self.backend.get_index_for_model(models.Book)
+        index2 = self.backend.get_index_for_model(models.Novel)
+        self.assertEqual(index1, index2)
+
+    def test_models_with_different_base_model_use_different_index(self):
+        index1 = self.backend.get_index_for_model(models.Book)
+        index2 = self.backend.get_index_for_model(models.Author)
+        self.assertNotEqual(index1, index2)

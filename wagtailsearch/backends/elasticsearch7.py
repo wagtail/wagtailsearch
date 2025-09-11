@@ -1249,6 +1249,9 @@ class Elasticsearch7SearchBackend(BaseSearchBackend):
 
         self.es = Elasticsearch(hosts=self.hosts, **options)
 
+        # Keep a lookup of previously instantiated instance objects, so that successive calls to get_index_for_model return the same instance
+        self._indexes_by_name = {}
+
     def get_index_for_model(self, model):
         # Split models up into separate indices based on their root model.
         # For example, all page-derived models get put together in one index,
@@ -1260,8 +1263,11 @@ class Elasticsearch7SearchBackend(BaseSearchBackend):
             + "_"
             + root_model.__name__.lower()
         )
+        index_name = self.index_name + index_suffix
+        if index_name not in self._indexes_by_name:
+            self._indexes_by_name[index_name] = self.index_class(self, index_name)
 
-        return self.index_class(self, self.index_name + index_suffix)
+        return self._indexes_by_name[index_name]
 
     def get_index(self):
         return self.index_class(self, self.index_name)

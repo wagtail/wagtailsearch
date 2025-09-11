@@ -208,3 +208,8 @@ class TestPostgresLanguageTextSearch(TestCase):
 
         results = self.backend.search(Phrase("Nu zijn beter"), models.Book)
         self.assertEqual(list(results), [self.book])
+
+    def test_all_models_use_same_index(self):
+        index1 = self.backend.get_index_for_model(models.Author)
+        index2 = self.backend.get_index_for_model(models.Book)
+        self.assertEqual(index1, index2)
