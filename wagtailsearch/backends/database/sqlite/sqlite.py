@@ -275,6 +275,14 @@ class SQLiteIndex(BaseIndex):
     def delete_item(self, item):
         item.index_entries.all()._raw_delete(using=self.write_connection.alias)
 
+    def reset(self):
+        for connection in [
+            connection
+            for connection in connections.all()
+            if connection.vendor == "sqlite"
+        ]:
+            IndexEntry._default_manager.all()._raw_delete(using=connection.alias)
+
     def __str__(self):
         return self.name
 
@@ -681,14 +689,6 @@ class SQLiteSearchBackend(BaseSearchBackend):
 
     def get_index_for_object(self, obj):
         return self.get_index_for_model(obj._meta.model)
-
-    def reset_index(self):
-        for connection in [
-            connection
-            for connection in connections.all()
-            if connection.vendor == "sqlite"
-        ]:
-            IndexEntry._default_manager.all()._raw_delete(using=connection.alias)
 
     def add_type(self, model):
         pass  # Not needed.

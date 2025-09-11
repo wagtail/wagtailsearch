@@ -67,3 +67,11 @@ class TestDBBackend(BackendTests, TestCase):
         index1 = self.backend.get_index_for_model(models.Author)
         index2 = self.backend.get_index_for_model(models.Book)
         self.assertEqual(index1, index2)
+
+    def test_reset_index(self):
+        """
+        After running backend.reset_index(), search should still return results (because there's no actual index to reset)
+        """
+        self.backend.reset_index()
+        results = self.backend.search("JavaScript", models.Book)
+        self.assertEqual(results.count(), 2)

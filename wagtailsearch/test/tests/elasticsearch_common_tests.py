@@ -259,3 +259,11 @@ class ElasticsearchCommonSearchBackendTests(BackendTests):
         index1 = self.backend.get_index_for_model(models.Book)
         index2 = self.backend.get_index_for_model(models.Author)
         self.assertNotEqual(index1, index2)
+
+    def test_reset_index(self):
+        """
+        After running backend.reset_index(), search should return no results.
+        """
+        self.backend.reset_index()
+        results = self.backend.search("JavaScript", models.Book)
+        self.assertEqual(results.count(), 0)

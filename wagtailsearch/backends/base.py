@@ -415,6 +415,9 @@ class BaseIndex:
     def refresh(self):
         pass
 
+    def reset(self):
+        pass
+
     def add_item(self, item):
         pass
 
@@ -454,9 +457,6 @@ class BaseSearchBackend:
     def get_rebuilder(self):
         return None
 
-    def reset_index(self):
-        raise NotImplementedError
-
     def add_type(self, model):
         self.get_index_for_model(model).add_model(model)
 
@@ -478,6 +478,10 @@ class BaseSearchBackend:
         """
         for index in self.all_indexes():
             index.refresh()
+
+    def reset_index(self):
+        for index in self.all_indexes():
+            index.reset()
 
     def add(self, obj):
         self.get_index_for_model(type(obj)).add_item(obj)

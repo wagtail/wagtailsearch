@@ -160,6 +160,14 @@ class TestPostgresSearchBackend(BackendTests, TestCase):
         results = self.backend.autocomplete("first <-> second", models.Book)
         self.assertUnsortedListEqual([r.title for r in results], [])
 
+    def test_reset_index(self):
+        """
+        After running backend.reset_index(), search should return no results.
+        """
+        self.backend.reset_index()
+        results = self.backend.search("JavaScript", models.Book)
+        self.assertEqual(results.count(), 0)
+
 
 @unittest.skipUnless(
     connection.vendor == "postgresql", "The current database is not PostgreSQL"

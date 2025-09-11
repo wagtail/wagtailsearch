@@ -1276,9 +1276,5 @@ class Elasticsearch7SearchBackend(BaseSearchBackend):
     def get_rebuilder(self):
         return self.rebuilder_class(self.get_index())
 
-    def reset_index(self):
-        # Use the rebuilder to reset the index
-        self.get_rebuilder().reset_index()
-
 
 SearchBackend = Elasticsearch7SearchBackend
