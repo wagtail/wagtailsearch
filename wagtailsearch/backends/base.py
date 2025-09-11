@@ -454,9 +454,6 @@ class BaseSearchBackend:
         """
         return self._index
 
-    def add_type(self, model):
-        self.get_index_for_model(model).add_model(model)
-
     def all_indexes(self):
         """
         Returns a list of all indexes used by this backend.
