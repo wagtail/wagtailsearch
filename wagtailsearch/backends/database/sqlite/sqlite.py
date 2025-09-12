@@ -526,12 +526,9 @@ class SQLiteSearchQueryCompiler(BaseSearchQueryCompiler):
             )
         )
 
+        # FIXME: this ordering doesn't get pulled through to the final query :-(
         if self.order_by_relevance:
             objs = objs.order_by(BM25().desc())
-        elif not objs.query.order_by:
-            # Adds a default ordering to avoid issue #3729.
-            queryset = objs.order_by("-pk")
-            rank_expression = F("pk")
 
         from django.db import connection
         from django.db.models.sql.subqueries import InsertQuery
@@ -559,8 +556,13 @@ class SQLiteSearchQueryCompiler(BaseSearchQueryCompiler):
                 id__in=obj_ids
             )  # We exclude the objects that matched the search query from the source queryset, if the query is negated.
 
+        # FIXME: rank_expression isn't valid in the final query, only in objs
         if score_field is not None:
             queryset = queryset.annotate(**{score_field: rank_expression})
+
+        if not self.order_by_relevance and not queryset.query.order_by:
+            # Adds a default ordering to avoid issue #3729.
+            queryset = queryset.order_by("-pk")
 
         return queryset[start:stop]
 

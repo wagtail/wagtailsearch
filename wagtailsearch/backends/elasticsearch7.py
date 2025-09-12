@@ -817,8 +817,8 @@ class Elasticsearch7SearchQueryCompiler(BaseSearchQueryCompiler):
             return sort
 
         else:
-            # Order by pk field
-            return ["pk"]
+            # Order by pk field descending
+            return [{"pk": "desc"}]
 
     def __repr__(self):
         return json.dumps(self.get_query())
