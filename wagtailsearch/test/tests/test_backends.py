@@ -81,6 +81,22 @@ class BackendTests:
             ["JavaScript: The good parts", "JavaScript: The Definitive Guide"],
         )
 
+    def test_search_via_queryset(self):
+        results = models.Book.objects.search("JavaScript", backend=self.backend_name)
+        self.assertUnsortedListEqual(
+            [r.title for r in results],
+            ["JavaScript: The good parts", "JavaScript: The Definitive Guide"],
+        )
+
+    def test_search_via_queryset_with_filter(self):
+        results = models.Book.objects.filter(number_of_pages__gt=500).search(
+            "JavaScript", backend=self.backend_name
+        )
+        self.assertUnsortedListEqual(
+            [r.title for r in results],
+            ["JavaScript: The Definitive Guide"],
+        )
+
     def test_search_count(self):
         results = self.backend.search("JavaScript", models.Book)
         self.assertEqual(results.count(), 2)
@@ -243,6 +259,28 @@ class BackendTests:
             [r.title for r in results],
             [
                 "Learning Python",
+            ],
+        )
+
+    def test_autocomplete_via_queryset(self):
+        results = models.Book.objects.autocomplete("Py", backend=self.backend_name)
+
+        self.assertUnsortedListEqual(
+            [r.title for r in results],
+            [
+                "Learning Python",
+            ],
+        )
+
+    def test_autocomplete_via_queryset_with_filter(self):
+        results = models.Book.objects.filter(number_of_pages__gt=500).autocomplete(
+            "Javasc", backend=self.backend_name
+        )
+
+        self.assertUnsortedListEqual(
+            [r.title for r in results],
+            [
+                "JavaScript: The Definitive Guide",
             ],
         )
 
