@@ -401,30 +401,46 @@ class EmptySearchResults(BaseSearchResults):
 
 class BaseIndex:
     """
-    Index class that provides do-nothing implementations of the indexing operations required by BaseSearchBackend. Use this directly
-    for search backends that do not maintain an index, such as the fallback database backend. Subclass it for backends that need to
-    do something.
+    Manages some subset of objects in the data store.
     """
 
     def __init__(self, backend):
         self.backend = backend
 
     def add_model(self, model):
+        """
+        Performs any configuration required for this index to accept documents of the given model.
+        """
         pass
 
     def refresh(self):
+        """
+        Performs any housekeeping required by the index so that recently-updated data is visible to searches.
+        """
         pass
 
     def reset(self):
+        """
+        Resets the index to its initial state, deleting all data.
+        """
         pass
 
     def add_item(self, obj):
+        """
+        Adds a single object to the index.
+        """
         self.add_items(obj._meta.model, [obj])
 
     def add_items(self, model, items):
+        """
+        Adds multiple objects of the same model to the index.
+        """
         pass
 
     def delete_item(self, item):
+        """
+        Deletes a single object from the index.
+        """
         pass
 
 
@@ -455,6 +471,9 @@ class BaseSearchBackend:
         return self._index
 
     def get_index_for_object(self, obj):
+        """
+        Returns the index to be used for the given model instance.
+        """
         return self.get_index_for_model(obj._meta.model)
 
     def all_indexes(self):
@@ -477,16 +496,28 @@ class BaseSearchBackend:
             index.refresh()
 
     def reset_index(self):
+        """
+        Resets all indexes used by this backend. This deletes all data from the indexes.
+        """
         for index in self.all_indexes():
             index.reset()
 
     def add(self, obj):
+        """
+        Adds a single object to the data store managed by this backend.
+        """
         self.get_index_for_object(obj).add_item(obj)
 
     def add_bulk(self, model, obj_list):
+        """
+        Adds multiple objects of the same model to the data store managed by this backend.
+        """
         self.get_index_for_model(model).add_items(model, obj_list)
 
     def delete(self, obj):
+        """
+        Deletes a single object from the data store managed by this backend.
+        """
         self.get_index_for_object(obj).delete_item(obj)
 
     def _search(self, query_compiler_class, query, model_or_queryset, **kwargs):
@@ -522,6 +553,9 @@ class BaseSearchBackend:
         operator=None,
         order_by_relevance=True,
     ):
+        """
+        Performs a whole-word search.
+        """
         return self._search(
             self.query_compiler_class,
             query,
@@ -539,6 +573,9 @@ class BaseSearchBackend:
         operator=None,
         order_by_relevance=True,
     ):
+        """
+        Performs an autocomplete (partial word match) search.
+        """
         if self.autocomplete_query_compiler_class is None:
             raise NotImplementedError(
                 "This search backend does not support the autocomplete API"
