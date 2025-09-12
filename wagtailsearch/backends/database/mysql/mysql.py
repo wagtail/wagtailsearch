@@ -407,34 +407,6 @@ class MySQLSearchQueryCompiler(BaseSearchQueryCompiler):
     def build_search_query(self, query):
         return self.build_search_query_content(query)
 
-    def get_index_vectors(self, search_query):
-        return [
-            (F("index_entries__title"), F("index_entries__title_norm")),
-            (F("index_entries__body"), 1.0),
-        ]
-
-    def get_fields_vectors(self, search_query):
-        raise NotImplementedError()
-
-    def get_search_vectors(self, search_query):
-        if self.fields is None:
-            return self.get_index_vectors(search_query)
-
-        else:
-            return self.get_fields_vectors(search_query)
-
-    def _build_rank_expression(self, vectors, config):
-        rank_expressions = [
-            self.build_tsrank(vector, self.query, config=config) * boost
-            for vector, boost in vectors
-        ]
-
-        rank_expression = rank_expressions[0]
-        for other_rank_expression in rank_expressions[1:]:
-            rank_expression += other_rank_expression
-
-        return rank_expression
-
     def search(self, config, start, stop, score_field=None):
         # TODO: Handle MatchAll nested inside other search query classes.
         if isinstance(self.query, MatchAll):
@@ -541,12 +513,6 @@ class MySQLAutocompleteQueryCompiler(MySQLSearchQueryCompiler):
 
     def get_search_fields_for_model(self):
         return self.queryset.model.get_autocomplete_search_fields()
-
-    def get_index_vectors(self, search_query):
-        return [(F("index_entries__autocomplete"), 1.0)]
-
-    def get_fields_vectors(self, search_query):
-        raise NotImplementedError()
 
 
 class MySQLSearchResults(BaseSearchResults):
