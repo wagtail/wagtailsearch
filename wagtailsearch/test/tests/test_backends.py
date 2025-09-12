@@ -1059,6 +1059,16 @@ class BackendTests:
         )
         self.assertFalse(stdout.getvalue())
 
+    def test_wagtail_update_index(self):
+        stdout = StringIO()
+        management.call_command(
+            "wagtail_update_index",
+            verbosity=0,
+            backend_name=self.backend_name,
+            stdout=stdout,
+        )
+        self.assertFalse(stdout.getvalue())
+
     def test_get_index_for_same_model_compares_as_equal(self):
         """
         If two results from get_index_for_model refer to the same index, they should compare as equal.
