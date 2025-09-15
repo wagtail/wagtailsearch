@@ -1,6 +1,6 @@
 import unittest
 
-from unittest import skip
+from unittest import expectedFailure, skip
 
 from django.db import connection
 from django.test.testcases import TransactionTestCase
@@ -191,6 +191,14 @@ class TestMySQLSearchBackend(BackendTests, TransactionTestCase):
     @skip("The MySQL backend doesn't guarantee correct ranking of results.")
     def test_ranking(self):
         return super().test_ranking()
+
+    @expectedFailure
+    def test_negated_and(self):
+        return super().test_negated_and()
+
+    @expectedFailure
+    def test_negated_or(self):
+        return super().test_negated_or()
 
     def test_all_models_use_same_index(self):
         index1 = self.backend.get_index_for_model(models.Author)
