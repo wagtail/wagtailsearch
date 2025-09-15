@@ -38,11 +38,9 @@ def group_models_by_index(backend, models):
 
     for model in models:
         index = backend.get_index_for_model(model)
-
-        if index:
-            indices.setdefault(index.name, index)
-            models_by_index.setdefault(index.name, [])
-            models_by_index[index.name].append(model)
+        indices.setdefault(index.name, index)
+        models_by_index.setdefault(index.name, [])
+        models_by_index[index.name].append(model)
 
     return collections.OrderedDict(
         [
