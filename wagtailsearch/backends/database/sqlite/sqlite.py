@@ -534,10 +534,9 @@ class SQLiteSearchQueryCompiler(BaseSearchQueryCompiler):
 
         compiler = InsertQuery(IndexEntry).get_compiler(connection=connection)
 
+        objs = objs.values_list("index_entry__object_id", flat=True)
         try:
-            obj_ids = [
-                obj.index_entry.object_id for obj in objs
-            ]  # Get the IDs of the objects that matched. They're stored in the IndexEntry model, so we need to get that first.
+            obj_ids = list(objs)
         except OperationalError as e:
             raise OperationalError(
                 str(e)
@@ -548,11 +547,11 @@ class SQLiteSearchQueryCompiler(BaseSearchQueryCompiler):
 
         if not negated:
             queryset = self.queryset.filter(
-                id__in=obj_ids
+                pk__in=obj_ids
             )  # We need to filter the source queryset to get the objects that matched the search query.
         else:
             queryset = self.queryset.exclude(
-                id__in=obj_ids
+                pk__in=obj_ids
             )  # We exclude the objects that matched the search query from the source queryset, if the query is negated.
 
         # FIXME: rank_expression isn't valid in the final query, only in objs
