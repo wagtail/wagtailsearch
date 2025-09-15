@@ -319,10 +319,9 @@ class Elasticsearch7Mapping:
 
 class Elasticsearch7Index(BaseIndex):
     def __init__(self, backend, name):
-        super().__init__(backend)
+        super().__init__(backend, name)
         self.es = backend.es
         self.mapping_class = backend.mapping_class
-        self.name = name
 
     if use_new_elasticsearch_api:
 
@@ -1149,6 +1148,7 @@ class Elasticsearch7SearchBackend(BaseSearchBackend):
     atomic_rebuilder_class = ElasticsearchAtomicIndexRebuilder
     catch_indexing_errors = True
     timeout_kwarg_name = "timeout"
+    default_index_name = "wagtail"
 
     settings = {
         "settings": {
@@ -1218,7 +1218,6 @@ class Elasticsearch7SearchBackend(BaseSearchBackend):
 
         # Get settings
         self.hosts = params.pop("HOSTS", None)
-        self.index_name = params.pop("INDEX", "wagtail")
         self.timeout = params.pop("TIMEOUT", 10)
 
         if params.pop("ATOMIC_REBUILD", False):
@@ -1259,13 +1258,7 @@ class Elasticsearch7SearchBackend(BaseSearchBackend):
         # For example, all page-derived models get put together in one index,
         # while images and documents each have their own index.
         root_model = get_model_root(model)
-        index_suffix = (
-            "__"
-            + root_model._meta.app_label.lower()
-            + "_"
-            + root_model.__name__.lower()
-        )
-        index_name = self.index_name + index_suffix
+        index_name = f"{self.index_name}__{root_model._meta.app_label.lower()}_{root_model.__name__.lower()}"
         if index_name not in self._indexes_by_name:
             self._indexes_by_name[index_name] = self.index_class(self, index_name)
 

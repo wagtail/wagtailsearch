@@ -432,8 +432,9 @@ class BaseIndex:
     Manages some subset of objects in the data store.
     """
 
-    def __init__(self, backend):
+    def __init__(self, backend, name):
         self.backend = backend
+        self.name = name
 
     def add_model(self, model):
         """
@@ -479,9 +480,10 @@ class BaseSearchBackend:
     results_class = None
     rebuilder_class = None
     catch_indexing_errors = False
+    default_index_name = "default"
 
     def __init__(self, params):
-        pass
+        self.index_name = params.get("INDEX", self.default_index_name)
 
     @cached_property
     def _index(self):
@@ -490,7 +492,7 @@ class BaseSearchBackend:
         should override index_class. Backends that use different indexes for different models should override get_index_for_model() instead.
         Code outside of the backends themselves should not use this property, and should call get_index_for_model(model) instead.
         """
-        return self.index_class(self)
+        return self.index_class(self, self.index_name)
 
     def get_index_for_model(self, model):
         """

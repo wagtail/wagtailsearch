@@ -171,9 +171,8 @@ class ObjectIndexer:
 
 
 class PostgresIndex(BaseIndex):
-    def __init__(self, backend):
-        super().__init__(backend)
-        self.name = self.backend.index_name
+    def __init__(self, backend, name):
+        super().__init__(backend, name)
 
         self.read_connection = connections[router.db_for_read(IndexEntry)]
         self.write_connection = connections[router.db_for_write(IndexEntry)]
@@ -697,7 +696,6 @@ class PostgresSearchBackend(BaseSearchBackend):
 
     def __init__(self, params):
         super().__init__(params)
-        self.index_name = params.get("INDEX", "default")
         self.config = params.get("SEARCH_CONFIG")
 
         # Use 'simple' config for autocomplete to disable stemming
