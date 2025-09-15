@@ -7,7 +7,7 @@ from django.db import (
     router,
     transaction,
 )
-from django.db.models import Avg, Count, F, Manager, Q, TextField
+from django.db.models import Avg, Count, F, Manager, TextField
 from django.db.models.constants import LOOKUP_SEP
 from django.db.models.functions import Cast, Length
 from django.utils.encoding import force_str
@@ -547,9 +547,6 @@ class SQLiteSearchQueryCompiler(BaseSearchQueryCompiler):
             queryset = queryset.order_by("-pk")
 
         return queryset[start:stop]
-
-    def _process_match_none(self):
-        return Q(pk__in=[])
 
 
 class SQLiteAutocompleteQueryCompiler(SQLiteSearchQueryCompiler):
