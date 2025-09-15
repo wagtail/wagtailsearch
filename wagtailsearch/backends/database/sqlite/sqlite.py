@@ -10,7 +10,6 @@ from django.db import (
 from django.db.models import Avg, Count, F, Manager, Q, TextField
 from django.db.models.constants import LOOKUP_SEP
 from django.db.models.functions import Cast, Length
-from django.db.utils import OperationalError
 from django.utils.encoding import force_str
 from django.utils.functional import cached_property
 
@@ -529,21 +528,7 @@ class SQLiteSearchQueryCompiler(BaseSearchQueryCompiler):
         if self.order_by_relevance:
             objs = objs.order_by(BM25().desc())
 
-        from django.db import connection
-        from django.db.models.sql.subqueries import InsertQuery
-
-        compiler = InsertQuery(IndexEntry).get_compiler(connection=connection)
-
-        objs = objs.values_list("index_entry__object_id", flat=True)
-        try:
-            obj_ids = list(objs)
-        except OperationalError as e:
-            raise OperationalError(
-                str(e)
-                + " The original query was: "
-                + compiler.compile(objs.query)[0]
-                + str(compiler.compile(objs.query)[1])
-            ) from e
+        obj_ids = objs.values_list("index_entry__object_id", flat=True)
 
         if not negated:
             queryset = self.queryset.filter(
