@@ -1,26 +1,60 @@
 from django.core.exceptions import ImproperlyConfigured
+from elasticsearch.helpers import bulk
 
 from wagtailsearch.backends.elasticsearch7 import (
     Elasticsearch7AutocompleteQueryCompiler,
     Elasticsearch7SearchBackend,
     Elasticsearch7SearchQueryCompiler,
-    Elasticsearch715Index,
     Elasticsearch715SearchResults,
 )
-from wagtailsearch.backends.elasticsearch_common import BaseElasticsearchMapping
+from wagtailsearch.backends.elasticsearch_common import (
+    BaseElasticsearchIndex,
+    BaseElasticsearchMapping,
+)
+from wagtailsearch.index import class_is_indexed
 
 
 class Elasticsearch8Mapping(BaseElasticsearchMapping):
     pass
 
 
-class Elasticsearch8Index(Elasticsearch715Index):
+class Elasticsearch8Index(BaseElasticsearchIndex):
+    def put(self):
+        self.connection.indices.create(index=self.name, **self.backend.settings)
+
+    def delete(self):
+        try:
+            self.connection.indices.delete(index=self.name)
+        except self.NotFoundError:
+            pass
+
+    def refresh(self):
+        self.connection.indices.refresh(index=self.name)
+
     def add_model(self, model):
         # Get mapping
         mapping = self.mapping_class(model)
 
         # Put mapping
         self.connection.indices.put_mapping(index=self.name, **mapping.get_mapping())
+
+    def add_item(self, item):
+        # Make sure the object can be indexed
+        if not class_is_indexed(item.__class__):
+            return
+
+        # Get mapping
+        mapping = self.mapping_class(item.__class__)
+
+        # Add document to index
+        self.connection.index(
+            index=self.name,
+            document=mapping.get_document(item),
+            id=mapping.get_document_id(item),
+        )
+
+    def _run_bulk(self, actions):
+        bulk(self.connection, actions, index=self.name)
 
 
 class Elasticsearch8SearchQueryCompiler(Elasticsearch7SearchQueryCompiler):

@@ -12,17 +12,19 @@ from django.utils.crypto import get_random_string
 from elasticsearch import VERSION as ELASTICSEARCH_VERSION
 from elasticsearch import Elasticsearch
 from elasticsearch import NotFoundError as ElasticsearchNotFoundError
-from elasticsearch.helpers import bulk as elasticsearch_bulk_helper
+from elasticsearch.helpers import bulk
 
 from wagtailsearch.backends.base import (
-    BaseIndex,
     BaseSearchBackend,
     BaseSearchQueryCompiler,
     BaseSearchResults,
     FilterFieldError,
     get_model_root,
 )
-from wagtailsearch.backends.elasticsearch_common import BaseElasticsearchMapping
+from wagtailsearch.backends.elasticsearch_common import (
+    BaseElasticsearchIndex,
+    BaseElasticsearchMapping,
+)
 from wagtailsearch.index import (
     class_is_indexed,
     get_indexed_models,
@@ -48,14 +50,8 @@ class Elasticsearch7Mapping(BaseElasticsearchMapping):
     pass
 
 
-class Elasticsearch70Index(BaseIndex):
+class Elasticsearch70Index(BaseElasticsearchIndex):
     """Index class implementing the Elasticsearch <7.15 API"""
-
-    def __init__(self, backend, name):
-        super().__init__(backend, name)
-        self.connection = backend.connection
-        self.mapping_class = backend.mapping_class
-        self.NotFoundError = self.backend.NotFoundError
 
     def put(self):
         self.connection.indices.create(self.name, self.backend.settings)
@@ -68,33 +64,6 @@ class Elasticsearch70Index(BaseIndex):
 
     def refresh(self):
         self.connection.indices.refresh(self.name)
-
-    def exists(self):
-        return self.connection.indices.exists(self.name)
-
-    def is_alias(self):
-        return self.connection.indices.exists_alias(name=self.name)
-
-    def aliased_indices(self):
-        """
-        If this index object represents an alias (which appear the same in the
-        Elasticsearch API), this method can be used to fetch the list of indices
-        the alias points to.
-
-        Use the is_alias method if you need to find out if this an alias. This
-        returns an empty list if called on an index.
-        """
-        return [
-            self.backend.index_class(self.backend, index_name)
-            for index_name in self.connection.indices.get_alias(name=self.name).keys()
-        ]
-
-    def put_alias(self, name):
-        """
-        Creates a new alias to this index. If the alias already exists it will
-        be repointed to this index.
-        """
-        self.connection.indices.put_alias(name=name, index=self.name)
 
     def add_model(self, model):
         # Get mapping
@@ -115,51 +84,11 @@ class Elasticsearch70Index(BaseIndex):
             self.name, mapping.get_document(item), id=mapping.get_document_id(item)
         )
 
-    def add_items(self, model, items):
-        if not class_is_indexed(model):
-            return
-
-        # Get mapping
-        mapping = self.mapping_class(model)
-
-        # Create list of actions
-        actions = []
-        for item in items:
-            # Create the action
-            action = {"_id": mapping.get_document_id(item)}
-            action.update(mapping.get_document(item))
-            actions.append(action)
-
-        if actions:
-            # Run the actions
-            self._run_bulk(actions)
-
     def _run_bulk(self, actions):
-        elasticsearch_bulk_helper(self.connection, actions, index=self.name)
-
-    def delete_item(self, item):
-        # Make sure the object can be indexed
-        if not class_is_indexed(item.__class__):
-            return
-
-        # Get mapping
-        mapping = self.mapping_class(item.__class__)
-
-        # Delete document
-        try:
-            self.connection.delete(index=self.name, id=mapping.get_document_id(item))
-        except self.NotFoundError:
-            pass  # Document doesn't exist, ignore this exception
-
-    def reset(self):
-        # Delete old index
-        self.delete()
-
-        # Create new index
-        self.put()
+        bulk(self.connection, actions, index=self.name)
 
 
-class Elasticsearch715Index(Elasticsearch70Index):
+class Elasticsearch715Index(BaseElasticsearchIndex):
     """Index class overriding select methods to implement the Elasticsearch >=7.15 API"""
 
     def put(self):
@@ -173,6 +102,13 @@ class Elasticsearch715Index(Elasticsearch70Index):
 
     def refresh(self):
         self.connection.indices.refresh(index=self.name)
+
+    def add_model(self, model):
+        # Get mapping
+        mapping = self.mapping_class(model)
+
+        # Put mapping
+        self.connection.indices.put_mapping(index=self.name, body=mapping.get_mapping())
 
     def add_item(self, item):
         # Make sure the object can be indexed
@@ -188,6 +124,9 @@ class Elasticsearch715Index(Elasticsearch70Index):
             document=mapping.get_document(item),
             id=mapping.get_document_id(item),
         )
+
+    def _run_bulk(self, actions):
+        bulk(self.connection, actions, index=self.name)
 
 
 class Elasticsearch7SearchQueryCompiler(BaseSearchQueryCompiler):
