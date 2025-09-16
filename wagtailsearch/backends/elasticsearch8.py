@@ -4,12 +4,12 @@ from elasticsearch.helpers import bulk
 from wagtailsearch.backends.elasticsearch7 import (
     Elasticsearch7AutocompleteQueryCompiler,
     Elasticsearch7SearchBackend,
-    Elasticsearch7SearchQueryCompiler,
     Elasticsearch715SearchResults,
 )
 from wagtailsearch.backends.elasticsearch_common import (
     BaseElasticsearchIndex,
     BaseElasticsearchMapping,
+    BaseElasticsearchSearchQueryCompiler,
 )
 from wagtailsearch.index import class_is_indexed
 
@@ -57,7 +57,7 @@ class Elasticsearch8Index(BaseElasticsearchIndex):
         bulk(self.connection, actions, index=self.name)
 
 
-class Elasticsearch8SearchQueryCompiler(Elasticsearch7SearchQueryCompiler):
+class Elasticsearch8SearchQueryCompiler(BaseElasticsearchSearchQueryCompiler):
     mapping_class = Elasticsearch8Mapping
 
 
