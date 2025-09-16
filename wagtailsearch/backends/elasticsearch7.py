@@ -34,9 +34,6 @@ from wagtailsearch.query import And, Boost, Fuzzy, MatchAll, Not, Or, Phrase, Pl
 from wagtailsearch.utils import deep_update
 
 
-use_new_elasticsearch_api = ELASTICSEARCH_VERSION >= (7, 15)
-
-
 class Field:
     def __init__(self, field_name, boost=1):
         self.field_name = field_name
@@ -317,39 +314,25 @@ class Elasticsearch7Mapping:
         return f"<ElasticsearchMapping: {self.model.__name__}>"
 
 
-class Elasticsearch7Index(BaseIndex):
+class Elasticsearch70Index(BaseIndex):
+    """Index class implementing the Elasticsearch <7.15 API"""
+
     def __init__(self, backend, name):
         super().__init__(backend, name)
         self.es = backend.es
         self.mapping_class = backend.mapping_class
 
-    if use_new_elasticsearch_api:
+    def put(self):
+        self.es.indices.create(self.name, self.backend.settings)
 
-        def put(self):
-            self.es.indices.create(index=self.name, **self.backend.settings)
+    def delete(self):
+        try:
+            self.es.indices.delete(self.name)
+        except NotFoundError:
+            pass
 
-        def delete(self):
-            try:
-                self.es.indices.delete(index=self.name)
-            except NotFoundError:
-                pass
-
-        def refresh(self):
-            self.es.indices.refresh(index=self.name)
-
-    else:
-
-        def put(self):
-            self.es.indices.create(self.name, self.backend.settings)
-
-        def delete(self):
-            try:
-                self.es.indices.delete(self.name)
-            except NotFoundError:
-                pass
-
-        def refresh(self):
-            self.es.indices.refresh(self.name)
+    def refresh(self):
+        self.es.indices.refresh(self.name)
 
     def exists(self):
         return self.es.indices.exists(self.name)
@@ -385,36 +368,17 @@ class Elasticsearch7Index(BaseIndex):
         # Put mapping
         self.es.indices.put_mapping(index=self.name, body=mapping.get_mapping())
 
-    if use_new_elasticsearch_api:
+    def add_item(self, item):
+        # Make sure the object can be indexed
+        if not class_is_indexed(item.__class__):
+            return
+        # Get mapping
+        mapping = self.mapping_class(item.__class__)
 
-        def add_item(self, item):
-            # Make sure the object can be indexed
-            if not class_is_indexed(item.__class__):
-                return
-
-            # Get mapping
-            mapping = self.mapping_class(item.__class__)
-
-            # Add document to index
-            self.es.index(
-                index=self.name,
-                document=mapping.get_document(item),
-                id=mapping.get_document_id(item),
-            )
-
-    else:
-
-        def add_item(self, item):
-            # Make sure the object can be indexed
-            if not class_is_indexed(item.__class__):
-                return
-            # Get mapping
-            mapping = self.mapping_class(item.__class__)
-
-            # Add document to index
-            self.es.index(
-                self.name, mapping.get_document(item), id=mapping.get_document_id(item)
-            )
+        # Add document to index
+        self.es.index(
+            self.name, mapping.get_document(item), id=mapping.get_document_id(item)
+        )
 
     def add_items(self, model, items):
         if not class_is_indexed(model):
@@ -455,6 +419,37 @@ class Elasticsearch7Index(BaseIndex):
 
         # Create new index
         self.put()
+
+
+class Elasticsearch715Index(Elasticsearch70Index):
+    """Index class overriding select methods to implement the Elasticsearch >=7.15 API"""
+
+    def put(self):
+        self.es.indices.create(index=self.name, **self.backend.settings)
+
+    def delete(self):
+        try:
+            self.es.indices.delete(index=self.name)
+        except NotFoundError:
+            pass
+
+    def refresh(self):
+        self.es.indices.refresh(index=self.name)
+
+    def add_item(self, item):
+        # Make sure the object can be indexed
+        if not class_is_indexed(item.__class__):
+            return
+
+        # Get mapping
+        mapping = self.mapping_class(item.__class__)
+
+        # Add document to index
+        self.es.index(
+            index=self.name,
+            document=mapping.get_document(item),
+            id=mapping.get_document_id(item),
+        )
 
 
 class Elasticsearch7SearchQueryCompiler(BaseSearchQueryCompiler):
@@ -823,7 +818,9 @@ class Elasticsearch7SearchQueryCompiler(BaseSearchQueryCompiler):
         return json.dumps(self.get_query())
 
 
-class Elasticsearch7SearchResults(BaseSearchResults):
+class Elasticsearch70SearchResults(BaseSearchResults):
+    """Search results class implementing the Elasticsearch <7.15 API"""
+
     fields_param_name = "stored_fields"
     supports_facet = True
 
@@ -906,18 +903,9 @@ class Elasticsearch7SearchResults(BaseSearchResults):
             if result:
                 yield result
 
-    if use_new_elasticsearch_api:
-
-        def _backend_do_search(self, body, **kwargs):
-            # As of Elasticsearch 7.15, the 'body' parameter is deprecated; instead, the top-level
-            # keys of the body dict are now kwargs in their own right
-            return self.backend.es.search(**body, **kwargs)
-
-    else:
-
-        def _backend_do_search(self, body, **kwargs):
-            # Send the search query to the backend.
-            return self.backend.es.search(body=body, **kwargs)
+    def _backend_do_search(self, body, **kwargs):
+        # Send the search query to the backend.
+        return self.backend.es.search(body=body, **kwargs)
 
     def _do_search(self):
         PAGE_SIZE = 100
@@ -1017,6 +1005,15 @@ class Elasticsearch7SearchResults(BaseSearchResults):
             hit_count = min(hit_count, self.stop - self.start)
 
         return max(hit_count, 0)
+
+
+class Elasticsearch715SearchResults(Elasticsearch70SearchResults):
+    """Search results class overriding the search method to implement the Elasticsearch >=7.15 API"""
+
+    def _backend_do_search(self, body, **kwargs):
+        # As of Elasticsearch 7.15, the 'body' parameter is deprecated; instead, the top-level
+        # keys of the body dict are now kwargs in their own right
+        return self.backend.es.search(**body, **kwargs)
 
 
 class ElasticsearchAutocompleteQueryCompilerImpl:
@@ -1138,12 +1135,12 @@ class ElasticsearchAtomicIndexRebuilder(ElasticsearchIndexRebuilder):
             self.index.put_alias(self.alias.name)
 
 
-class Elasticsearch7SearchBackend(BaseSearchBackend):
+class Elasticsearch70SearchBackend(BaseSearchBackend):
     mapping_class = Elasticsearch7Mapping
-    index_class = Elasticsearch7Index
+    index_class = Elasticsearch70Index
     query_compiler_class = Elasticsearch7SearchQueryCompiler
     autocomplete_query_compiler_class = Elasticsearch7AutocompleteQueryCompiler
-    results_class = Elasticsearch7SearchResults
+    results_class = Elasticsearch70SearchResults
     basic_rebuilder_class = ElasticsearchIndexRebuilder
     atomic_rebuilder_class = ElasticsearchAtomicIndexRebuilder
     catch_indexing_errors = True
@@ -1265,4 +1262,14 @@ class Elasticsearch7SearchBackend(BaseSearchBackend):
         return self._indexes_by_name[index_name]
 
 
-SearchBackend = Elasticsearch7SearchBackend
+class Elasticsearch715SearchBackend(Elasticsearch70SearchBackend):
+    index_class = Elasticsearch715Index
+    results_class = Elasticsearch715SearchResults
+
+
+if ELASTICSEARCH_VERSION >= (7, 15):
+    SearchBackend = Elasticsearch715SearchBackend
+    Elasticsearch7SearchBackend = Elasticsearch715SearchBackend
+else:
+    SearchBackend = Elasticsearch70SearchBackend
+    Elasticsearch7SearchBackend = Elasticsearch70SearchBackend
