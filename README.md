@@ -106,6 +106,8 @@ To test under Elasticsearch 7:
 /home/vagrant/elasticsearch-7.17.29/bin/elasticsearch
 # then in another shell session:
 source ~/.virtualenvs/wagtailsearches7/bin/activate
+# or to test against the pre-7.15 client library:
+#  source ~/.virtualenvs/wagtailsearches70/bin/activate
 cd /vagrant/
 ELASTICSEARCH_URL="http://wagtail:wagtail@localhost:9200" ELASTICSEARCH_VERSION=7 python testmanage.py test
 ```

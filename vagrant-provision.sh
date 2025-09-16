@@ -53,9 +53,16 @@ su - $DEV_USER -c "cd /home/$DEV_USER && tar xzf $ES7_DOWNLOAD_FILE"
 su - $DEV_USER -c "$ES7_ROOT/bin/elasticsearch-users useradd wagtail -p wagtail -r superuser"
 
 su - $DEV_USER -c "python -m venv $ES7_VIRTUALENV_DIR"
-su - $DEV_USER -c "$ES7_PIP install 'elasticsearch>=7.0.0,<8.0.0'"
+su - $DEV_USER -c "$ES7_PIP install 'elasticsearch>=7.15.0,<8.0.0'"
 su - $DEV_USER -c "$ES7_PIP install -e $PROJECT_DIR[testing]"
 
+# Add a separate venv for elasticsearch >=7.0,<7.15 (with the older api,
+# needed if we're running opensearch with the elasticsearch library)
+ES70_VIRTUALENV_DIR=/home/$DEV_USER/.virtualenvs/wagtailsearches70
+ES70_PIP=$ES70_VIRTUALENV_DIR/bin/pip
+su - $DEV_USER -c "python -m venv $ES70_VIRTUALENV_DIR"
+su - $DEV_USER -c "$ES70_PIP install 'elasticsearch==7.13.4'"
+su - $DEV_USER -c "$ES70_PIP install -e $PROJECT_DIR[testing]"
 
 # Elasticsearch 8
 ES8_VERSION=8.19.3
