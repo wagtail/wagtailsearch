@@ -2,15 +2,15 @@ from django.core.exceptions import ImproperlyConfigured
 
 from wagtailsearch.backends.elasticsearch7 import (
     Elasticsearch7AutocompleteQueryCompiler,
-    Elasticsearch7Mapping,
     Elasticsearch7SearchBackend,
     Elasticsearch7SearchQueryCompiler,
     Elasticsearch715Index,
     Elasticsearch715SearchResults,
 )
+from wagtailsearch.backends.elasticsearch_common import BaseElasticsearchMapping
 
 
-class Elasticsearch8Mapping(Elasticsearch7Mapping):
+class Elasticsearch8Mapping(BaseElasticsearchMapping):
     pass
 
 
