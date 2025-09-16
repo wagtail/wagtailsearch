@@ -1,6 +1,7 @@
 from django.db import models
 
 from wagtailsearch.backends.base import (
+    BaseIndex,
     get_model_root,
 )
 from wagtailsearch.index import (
@@ -9,6 +10,7 @@ from wagtailsearch.index import (
     Indexed,
     RelatedFields,
     SearchField,
+    class_is_indexed,
 )
 
 
@@ -277,3 +279,107 @@ class BaseElasticsearchMapping:
 
     def __repr__(self):
         return f"<ElasticsearchMapping: {self.model.__name__}>"
+
+
+class BaseElasticsearchIndex(BaseIndex):
+    def __init__(self, backend, name):
+        super().__init__(backend, name)
+        self.connection = backend.connection
+        self.mapping_class = backend.mapping_class
+        self.NotFoundError = self.backend.NotFoundError
+
+    def put(self):
+        # different connection classes have different calling conventions
+        # for connection.indices.create
+        raise NotImplementedError
+
+    def delete(self):
+        # different connection classes have different calling conventions
+        # for connection.indices.delete
+        raise NotImplementedError
+
+    def refresh(self):
+        # different connection classes have different calling conventions
+        # for connection.indices.refresh
+        raise NotImplementedError
+
+    def exists(self):
+        return self.connection.indices.exists(self.name)
+
+    def is_alias(self):
+        return self.connection.indices.exists_alias(name=self.name)
+
+    def aliased_indices(self):
+        """
+        If this index object represents an alias (which appear the same in the
+        Elasticsearch API), this method can be used to fetch the list of indices
+        the alias points to.
+
+        Use the is_alias method if you need to find out if this an alias. This
+        returns an empty list if called on an index.
+        """
+        return [
+            self.backend.index_class(self.backend, index_name)
+            for index_name in self.connection.indices.get_alias(name=self.name).keys()
+        ]
+
+    def put_alias(self, name):
+        """
+        Creates a new alias to this index. If the alias already exists it will
+        be repointed to this index.
+        """
+        self.connection.indices.put_alias(name=name, index=self.name)
+
+    def add_model(self, model):
+        # different connection classes have different calling conventions
+        # for connection.indices.put_mapping
+        raise NotImplementedError
+
+    def add_item(self, item):
+        # different connection classes have different calling conventions
+        # for connection.index
+        raise NotImplementedError
+
+    def add_items(self, model, items):
+        if not class_is_indexed(model):
+            return
+
+        # Get mapping
+        mapping = self.mapping_class(model)
+
+        # Create list of actions
+        actions = []
+        for item in items:
+            # Create the action
+            action = {"_id": mapping.get_document_id(item)}
+            action.update(mapping.get_document(item))
+            actions.append(action)
+
+        if actions:
+            # Run the actions
+            self._run_bulk(actions)
+
+    def _run_bulk(self, actions):
+        # will call the `bulk` helper of the underlying library
+        raise NotImplementedError
+
+    def delete_item(self, item):
+        # Make sure the object can be indexed
+        if not class_is_indexed(item.__class__):
+            return
+
+        # Get mapping
+        mapping = self.mapping_class(item.__class__)
+
+        # Delete document
+        try:
+            self.connection.delete(index=self.name, id=mapping.get_document_id(item))
+        except self.NotFoundError:
+            pass  # Document doesn't exist, ignore this exception
+
+    def reset(self):
+        # Delete old index
+        self.delete()
+
+        # Create new index
+        self.put()
