@@ -16,7 +16,7 @@ coverage:
 
 	/home/vagrant/opensearch-2.19.3/bin/opensearch -q &
 	sleep 10
-	ELASTICSEARCH_URL="http://localhost:9200" ELASTICSEARCH_VERSION=7 ~/.virtualenvs/wagtailsearchopensearch2/bin/coverage run -p testmanage.py test
+	OPENSEARCH_URL="http://localhost:9200" OPENSEARCH_VERSION=2 ~/.virtualenvs/wagtailsearchopensearch2/bin/coverage run -p testmanage.py test
 	killall java
 	coverage combine
 	coverage html

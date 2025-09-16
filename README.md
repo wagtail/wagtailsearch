@@ -127,7 +127,7 @@ To test under Opensearch 2:
 # then in another shell session:
 source ~/.virtualenvs/wagtailsearchopensearch2/bin/activate
 cd /vagrant/
-ELASTICSEARCH_URL="http://localhost:9200" ELASTICSEARCH_VERSION=7 python testmanage.py test
+OPENSEARCH_URL="http://localhost:9200" OPENSEARCH_VERSION=2 python testmanage.py test
 ```
 
 To test under all environments and produce a coverage report:
