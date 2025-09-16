@@ -7,6 +7,7 @@ coverage:
 	/home/vagrant/elasticsearch-7.17.29/bin/elasticsearch -q &
 	sleep 10
 	ELASTICSEARCH_URL="http://wagtail:wagtail@localhost:9200" ELASTICSEARCH_VERSION=7 ~/.virtualenvs/wagtailsearches7/bin/coverage run -p testmanage.py test
+	ELASTICSEARCH_URL="http://wagtail:wagtail@localhost:9200" ELASTICSEARCH_VERSION=7 ~/.virtualenvs/wagtailsearches70/bin/coverage run -p testmanage.py test
 	killall java
 
 	/home/vagrant/elasticsearch-8.19.3/bin/elasticsearch -q &
