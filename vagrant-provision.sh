@@ -72,3 +72,18 @@ su - $DEV_USER -c "$ES8_ROOT/bin/elasticsearch-users useradd wagtail -p wagtail 
 su - $DEV_USER -c "python -m venv $ES8_VIRTUALENV_DIR"
 su - $DEV_USER -c "$ES8_PIP install 'elasticsearch>=8.0.0,<9.0.0'"
 su - $DEV_USER -c "$ES8_PIP install -e $PROJECT_DIR[testing]"
+
+# Opensearch 2
+OPENSEARCH2_VERSION=2.19.3
+OPENSEARCH2_DOWNLOAD_FILE=opensearch-min-$OPENSEARCH2_VERSION-linux-arm64.tar.gz
+OPENSEARCH2_DOWNLOAD_URL=https://artifacts.opensearch.org/releases/core/opensearch/$OPENSEARCH2_VERSION/$OPENSEARCH2_DOWNLOAD_FILE
+OPENSEARCH2_ROOT=/home/$DEV_USER/opensearch-$OPENSEARCH2_VERSION
+OPENSEARCH2_VIRTUALENV_DIR=/home/$DEV_USER/.virtualenvs/wagtailsearchopensearch2
+OPENSEARCH2_PIP=$OPENSEARCH2_VIRTUALENV_DIR/bin/pip
+
+su - $DEV_USER -c "wget $OPENSEARCH2_DOWNLOAD_URL -P /home/$DEV_USER"
+su - $DEV_USER -c "cd /home/$DEV_USER && tar xzf $OPENSEARCH2_DOWNLOAD_FILE"
+
+su - $DEV_USER -c "python -m venv $OPENSEARCH2_VIRTUALENV_DIR"
+su - $DEV_USER -c "$OPENSEARCH2_PIP install 'elasticsearch==7.13.4'"
+su - $DEV_USER -c "$OPENSEARCH2_PIP install -e $PROJECT_DIR[testing]"
