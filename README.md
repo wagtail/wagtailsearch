@@ -120,6 +120,16 @@ cd /vagrant/
 ELASTICSEARCH_URL="https://wagtail:wagtail@localhost:9200" ELASTICSEARCH_VERSION=8 ELASTICSEARCH_CA_CERTS=~/elasticsearch-8.19.3/config/certs/http_ca.crt python testmanage.py test
 ```
 
+To test under Opensearch 2:
+
+```shell
+/home/vagrant/opensearch-2.19.3/bin/opensearch
+# then in another shell session:
+source ~/.virtualenvs/wagtailsearchopensearch2/bin/activate
+cd /vagrant/
+ELASTICSEARCH_URL="http://localhost:9200" ELASTICSEARCH_VERSION=7 python testmanage.py test
+```
+
 To test under all environments and produce a coverage report:
 ```shell
 cd /vagrant/
