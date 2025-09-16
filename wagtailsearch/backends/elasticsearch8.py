@@ -20,7 +20,7 @@ class Elasticsearch8Index(Elasticsearch715Index):
         mapping = self.mapping_class(model)
 
         # Put mapping
-        self.es.indices.put_mapping(index=self.name, **mapping.get_mapping())
+        self.connection.indices.put_mapping(index=self.name, **mapping.get_mapping())
 
 
 class Elasticsearch8SearchQueryCompiler(Elasticsearch7SearchQueryCompiler):

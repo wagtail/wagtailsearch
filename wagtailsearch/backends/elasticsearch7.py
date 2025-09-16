@@ -319,26 +319,26 @@ class Elasticsearch70Index(BaseIndex):
 
     def __init__(self, backend, name):
         super().__init__(backend, name)
-        self.es = backend.es
+        self.connection = backend.connection
         self.mapping_class = backend.mapping_class
 
     def put(self):
-        self.es.indices.create(self.name, self.backend.settings)
+        self.connection.indices.create(self.name, self.backend.settings)
 
     def delete(self):
         try:
-            self.es.indices.delete(self.name)
+            self.connection.indices.delete(self.name)
         except NotFoundError:
             pass
 
     def refresh(self):
-        self.es.indices.refresh(self.name)
+        self.connection.indices.refresh(self.name)
 
     def exists(self):
-        return self.es.indices.exists(self.name)
+        return self.connection.indices.exists(self.name)
 
     def is_alias(self):
-        return self.es.indices.exists_alias(name=self.name)
+        return self.connection.indices.exists_alias(name=self.name)
 
     def aliased_indices(self):
         """
@@ -351,7 +351,7 @@ class Elasticsearch70Index(BaseIndex):
         """
         return [
             self.backend.index_class(self.backend, index_name)
-            for index_name in self.es.indices.get_alias(name=self.name).keys()
+            for index_name in self.connection.indices.get_alias(name=self.name).keys()
         ]
 
     def put_alias(self, name):
@@ -359,14 +359,14 @@ class Elasticsearch70Index(BaseIndex):
         Creates a new alias to this index. If the alias already exists it will
         be repointed to this index.
         """
-        self.es.indices.put_alias(name=name, index=self.name)
+        self.connection.indices.put_alias(name=name, index=self.name)
 
     def add_model(self, model):
         # Get mapping
         mapping = self.mapping_class(model)
 
         # Put mapping
-        self.es.indices.put_mapping(index=self.name, body=mapping.get_mapping())
+        self.connection.indices.put_mapping(index=self.name, body=mapping.get_mapping())
 
     def add_item(self, item):
         # Make sure the object can be indexed
@@ -376,7 +376,7 @@ class Elasticsearch70Index(BaseIndex):
         mapping = self.mapping_class(item.__class__)
 
         # Add document to index
-        self.es.index(
+        self.connection.index(
             self.name, mapping.get_document(item), id=mapping.get_document_id(item)
         )
 
@@ -397,7 +397,7 @@ class Elasticsearch70Index(BaseIndex):
 
         if actions:
             # Run the actions
-            bulk(self.es, actions, index=self.name)
+            bulk(self.connection, actions, index=self.name)
 
     def delete_item(self, item):
         # Make sure the object can be indexed
@@ -409,7 +409,7 @@ class Elasticsearch70Index(BaseIndex):
 
         # Delete document
         try:
-            self.es.delete(index=self.name, id=mapping.get_document_id(item))
+            self.connection.delete(index=self.name, id=mapping.get_document_id(item))
         except NotFoundError:
             pass  # Document doesn't exist, ignore this exception
 
@@ -425,16 +425,16 @@ class Elasticsearch715Index(Elasticsearch70Index):
     """Index class overriding select methods to implement the Elasticsearch >=7.15 API"""
 
     def put(self):
-        self.es.indices.create(index=self.name, **self.backend.settings)
+        self.connection.indices.create(index=self.name, **self.backend.settings)
 
     def delete(self):
         try:
-            self.es.indices.delete(index=self.name)
+            self.connection.indices.delete(index=self.name)
         except NotFoundError:
             pass
 
     def refresh(self):
-        self.es.indices.refresh(index=self.name)
+        self.connection.indices.refresh(index=self.name)
 
     def add_item(self, item):
         # Make sure the object can be indexed
@@ -445,7 +445,7 @@ class Elasticsearch715Index(Elasticsearch70Index):
         mapping = self.mapping_class(item.__class__)
 
         # Add document to index
-        self.es.index(
+        self.connection.index(
             index=self.name,
             document=mapping.get_document(item),
             id=mapping.get_document_id(item),
@@ -905,7 +905,7 @@ class Elasticsearch70SearchResults(BaseSearchResults):
 
     def _backend_do_search(self, body, **kwargs):
         # Send the search query to the backend.
-        return self.backend.es.search(body=body, **kwargs)
+        return self.backend.connection.search(body=body, **kwargs)
 
     def _do_search(self):
         PAGE_SIZE = 100
@@ -970,11 +970,13 @@ class Elasticsearch70SearchResults(BaseSearchResults):
                 if "_scroll_id" not in page:
                     break
 
-                page = self.backend.es.scroll(scroll_id=page["_scroll_id"], scroll="2m")
+                page = self.backend.connection.scroll(
+                    scroll_id=page["_scroll_id"], scroll="2m"
+                )
 
             # Clear the scroll
             if "_scroll_id" in page:
-                self.backend.es.clear_scroll(scroll_id=page["_scroll_id"])
+                self.backend.connection.clear_scroll(scroll_id=page["_scroll_id"])
         else:
             params.update(
                 {
@@ -992,7 +994,7 @@ class Elasticsearch70SearchResults(BaseSearchResults):
 
     def _do_count(self):
         # Get count
-        hit_count = self.backend.es.count(
+        hit_count = self.backend.connection.count(
             index=self.backend.get_index_for_model(
                 self.query_compiler.queryset.model
             ).name,
@@ -1013,7 +1015,7 @@ class Elasticsearch715SearchResults(Elasticsearch70SearchResults):
     def _backend_do_search(self, body, **kwargs):
         # As of Elasticsearch 7.15, the 'body' parameter is deprecated; instead, the top-level
         # keys of the body dict are now kwargs in their own right
-        return self.backend.es.search(**body, **kwargs)
+        return self.backend.connection.search(**body, **kwargs)
 
 
 class ElasticsearchAutocompleteQueryCompilerImpl:
@@ -1245,7 +1247,7 @@ class Elasticsearch70SearchBackend(BaseSearchBackend):
 
         options[self.timeout_kwarg_name] = self.timeout
 
-        self.es = Elasticsearch(hosts=self.hosts, **options)
+        self.connection = Elasticsearch(hosts=self.hosts, **options)
 
         # Keep a lookup of previously instantiated instance objects, so that successive calls to get_index_for_model return the same instance
         self._indexes_by_name = {}
