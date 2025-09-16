@@ -132,6 +132,16 @@ cd /vagrant/
 OPENSEARCH_URL="http://localhost:9200" OPENSEARCH_VERSION=2 python testmanage.py test
 ```
 
+To test under Opensearch 3:
+
+```shell
+/home/vagrant/opensearch-3.2.0/bin/opensearch
+# then in another shell session:
+source ~/.virtualenvs/wagtailsearchopensearch3/bin/activate
+cd /vagrant/
+OPENSEARCH_URL="http://localhost:9200" OPENSEARCH_VERSION=3 python testmanage.py test
+```
+
 To test under all environments and produce a coverage report:
 ```shell
 cd /vagrant/

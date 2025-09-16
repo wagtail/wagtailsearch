@@ -19,5 +19,11 @@ coverage:
 	sleep 10
 	OPENSEARCH_URL="http://localhost:9200" OPENSEARCH_VERSION=2 ~/.virtualenvs/wagtailsearchopensearch2/bin/coverage run -p testmanage.py test
 	killall java
+
+	/home/vagrant/opensearch-3.2.0/bin/opensearch -q &
+	sleep 10
+	OPENSEARCH_URL="http://localhost:9200" OPENSEARCH_VERSION=3 ~/.virtualenvs/wagtailsearchopensearch3/bin/coverage run -p testmanage.py test
+	killall java
+
 	coverage combine
 	coverage html
