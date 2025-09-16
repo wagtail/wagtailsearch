@@ -10,8 +10,9 @@ from django.db.models.sql import Query
 from django.db.models.sql.constants import MULTI, SINGLE
 from django.utils.crypto import get_random_string
 from elasticsearch import VERSION as ELASTICSEARCH_VERSION
-from elasticsearch import Elasticsearch, NotFoundError
-from elasticsearch.helpers import bulk
+from elasticsearch import Elasticsearch
+from elasticsearch import NotFoundError as ElasticsearchNotFoundError
+from elasticsearch.helpers import bulk as elasticsearch_bulk_helper
 
 from wagtailsearch.backends.base import (
     BaseIndex,
@@ -321,6 +322,7 @@ class Elasticsearch70Index(BaseIndex):
         super().__init__(backend, name)
         self.connection = backend.connection
         self.mapping_class = backend.mapping_class
+        self.NotFoundError = self.backend.NotFoundError
 
     def put(self):
         self.connection.indices.create(self.name, self.backend.settings)
@@ -328,7 +330,7 @@ class Elasticsearch70Index(BaseIndex):
     def delete(self):
         try:
             self.connection.indices.delete(self.name)
-        except NotFoundError:
+        except self.NotFoundError:
             pass
 
     def refresh(self):
@@ -397,7 +399,10 @@ class Elasticsearch70Index(BaseIndex):
 
         if actions:
             # Run the actions
-            bulk(self.connection, actions, index=self.name)
+            self._run_bulk(actions)
+
+    def _run_bulk(self, actions):
+        elasticsearch_bulk_helper(self.connection, actions, index=self.name)
 
     def delete_item(self, item):
         # Make sure the object can be indexed
@@ -410,7 +415,7 @@ class Elasticsearch70Index(BaseIndex):
         # Delete document
         try:
             self.connection.delete(index=self.name, id=mapping.get_document_id(item))
-        except NotFoundError:
+        except self.NotFoundError:
             pass  # Document doesn't exist, ignore this exception
 
     def reset(self):
@@ -430,7 +435,7 @@ class Elasticsearch715Index(Elasticsearch70Index):
     def delete(self):
         try:
             self.connection.indices.delete(index=self.name)
-        except NotFoundError:
+        except self.NotFoundError:
             pass
 
     def refresh(self):
@@ -1145,6 +1150,8 @@ class Elasticsearch70SearchBackend(BaseSearchBackend):
     results_class = Elasticsearch70SearchResults
     basic_rebuilder_class = ElasticsearchIndexRebuilder
     atomic_rebuilder_class = ElasticsearchAtomicIndexRebuilder
+    connection_class = Elasticsearch
+    NotFoundError = ElasticsearchNotFoundError
     catch_indexing_errors = True
     timeout_kwarg_name = "timeout"
     default_index_name = "wagtail"
@@ -1247,7 +1254,7 @@ class Elasticsearch70SearchBackend(BaseSearchBackend):
 
         options[self.timeout_kwarg_name] = self.timeout
 
-        self.connection = Elasticsearch(hosts=self.hosts, **options)
+        self.connection = self.connection_class(hosts=self.hosts, **options)
 
         # Keep a lookup of previously instantiated instance objects, so that successive calls to get_index_for_model return the same instance
         self._indexes_by_name = {}
