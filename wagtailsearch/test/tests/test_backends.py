@@ -129,6 +129,17 @@ class BackendTests:
             ["JavaScript: The good parts", "JavaScript: The Definitive Guide"],
         )
 
+    def test_search_and_match_all(self):
+        results = self.backend.search(PlainText("javascript") & MATCH_ALL, models.Book)
+        self.assertUnsortedListEqual(
+            [r.title for r in results],
+            ["JavaScript: The good parts", "JavaScript: The Definitive Guide"],
+        )
+
+    def test_search_and_match_none(self):
+        results = self.backend.search(PlainText("javascript") & MATCH_NONE, models.Book)
+        self.assertFalse(list(results))
+
     def test_search_or_match_all(self):
         results = self.backend.search(PlainText("javascript") | MATCH_ALL, models.Book)
         self.assertSetEqual(set(results), set(models.Book.objects.all()))
