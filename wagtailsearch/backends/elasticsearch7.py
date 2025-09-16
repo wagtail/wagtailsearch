@@ -1,7 +1,6 @@
 from copy import deepcopy
 from urllib.parse import urlparse
 
-from django.utils.crypto import get_random_string
 from elasticsearch import VERSION as ELASTICSEARCH_VERSION
 from elasticsearch import Elasticsearch
 from elasticsearch import NotFoundError as ElasticsearchNotFoundError
@@ -12,8 +11,10 @@ from wagtailsearch.backends.base import (
     get_model_root,
 )
 from wagtailsearch.backends.elasticsearch_common import (
+    BaseElasticsearchAtomicIndexRebuilder,
     BaseElasticsearchAutocompleteQueryCompiler,
     BaseElasticsearchIndex,
+    BaseElasticsearchIndexRebuilder,
     BaseElasticsearchMapping,
     BaseElasticsearchSearchQueryCompiler,
     BaseElasticsearchSearchResults,
@@ -128,77 +129,12 @@ class Elasticsearch7AutocompleteQueryCompiler(
     mapping_class = Elasticsearch7Mapping
 
 
-class ElasticsearchIndexRebuilder:
-    def __init__(self, index):
-        self.index = index
-
-    def reset_index(self):
-        self.index.reset()
-
-    def start(self):
-        # Reset the index
-        self.reset_index()
-
-        return self.index
-
-    def finish(self):
-        self.index.refresh()
+class Elasticsearch7IndexRebuilder(BaseElasticsearchIndexRebuilder):
+    pass
 
 
-class ElasticsearchAtomicIndexRebuilder(ElasticsearchIndexRebuilder):
-    def __init__(self, index):
-        self.alias = index
-        self.index = index.backend.index_class(
-            index.backend, self.alias.name + "_" + get_random_string(7).lower()
-        )
-
-    def reset_index(self):
-        # Delete old index using the alias
-        # This should delete both the alias and the index
-        self.alias.delete()
-
-        # Create new index
-        self.index.put()
-
-        # Create a new alias
-        self.index.put_alias(self.alias.name)
-
-    def start(self):
-        # Create the new index
-        self.index.put()
-
-        return self.index
-
-    def finish(self):
-        self.index.refresh()
-
-        if self.alias.is_alias():
-            # Update existing alias, then delete the old index
-
-            # Find index that alias currently points to, we'll delete it after
-            # updating the alias
-            old_index = self.alias.aliased_indices()
-
-            # Update alias to point to new index
-            self.index.put_alias(self.alias.name)
-
-            # Delete old index
-            # aliased_indices() can return multiple indices. Delete them all
-            for index in old_index:
-                if index.name != self.index.name:
-                    index.delete()
-
-        else:
-            # self.alias doesn't currently refer to an alias in Elasticsearch.
-            # This means that either nothing exists in ES with that name or
-            # there is currently an index with the that name
-
-            # Run delete on the alias, just in case it is currently an index.
-            # This happens on the first rebuild after switching ATOMIC_REBUILD on
-            self.alias.delete()
-
-            # Create the alias
-            self.index.put_alias(self.alias.name)
+class Elasticsearch7AtomicIndexRebuilder(BaseElasticsearchAtomicIndexRebuilder):
+    pass
 
 
 class Elasticsearch70SearchBackend(BaseSearchBackend):
@@ -207,8 +143,8 @@ class Elasticsearch70SearchBackend(BaseSearchBackend):
     query_compiler_class = Elasticsearch7SearchQueryCompiler
     autocomplete_query_compiler_class = Elasticsearch7AutocompleteQueryCompiler
     results_class = Elasticsearch70SearchResults
-    basic_rebuilder_class = ElasticsearchIndexRebuilder
-    atomic_rebuilder_class = ElasticsearchAtomicIndexRebuilder
+    basic_rebuilder_class = Elasticsearch7IndexRebuilder
+    atomic_rebuilder_class = Elasticsearch7AtomicIndexRebuilder
     connection_class = Elasticsearch
     NotFoundError = ElasticsearchNotFoundError
     catch_indexing_errors = True
