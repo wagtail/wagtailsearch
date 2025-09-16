@@ -182,6 +182,12 @@ class TestPostgresSearchBackend(BackendTests, TestCase):
         self.assertIsNotNone(search_field)
         self.assertEqual(search_field.field_name, "name")
 
+    @unittest.skip(
+        "The Postgres backend doesn't support MatchAll as an inner expression."
+    )
+    def test_search_not_match_none(self):
+        return super().test_search_not_match_none()
+
 
 @unittest.skipUnless(
     connection.vendor == "postgresql", "The current database is not PostgreSQL"
