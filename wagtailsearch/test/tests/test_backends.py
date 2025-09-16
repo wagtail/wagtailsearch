@@ -1375,7 +1375,7 @@ class TestBackendLoader(TestCase):
     )
     def test_import_by_name_sqlite_db_vendor(self):
         # This should return the fallback backend, because the SQLite backend doesn't support versions less than 3.19.0
-        if not fts5_available():
+        if not fts5_available():  # pragma: no cover
             from wagtailsearch.backends.database.fallback import DatabaseSearchBackend
 
             db = get_search_backend(backend="default")
@@ -1393,7 +1393,7 @@ class TestBackendLoader(TestCase):
     )
     def test_import_by_path_sqlite_db_vendor(self):
         # Same as above
-        if not fts5_available():
+        if not fts5_available():  # pragma: no cover
             from wagtailsearch.backends.database.fallback import DatabaseSearchBackend
 
             db = get_search_backend(backend="wagtailsearch.backends.database")
