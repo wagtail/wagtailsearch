@@ -252,10 +252,10 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install .[ci]
           pip install "${{ matrix.django }}"
-          pip install "elasticsearch==7.13.4"
+          pip install "opensearch-py>=2,<3"
           pip install certifi
       - name: Test
         run: python testmanage.py test
         env:
-          ELASTICSEARCH_URL: http://localhost:9200
-          ELASTICSEARCH_VERSION: 7
+          OPENSEARCH_URL: http://localhost:9200
+          OPENSEARCH_VERSION: 2

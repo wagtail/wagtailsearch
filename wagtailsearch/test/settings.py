@@ -169,3 +169,19 @@ if "ELASTICSEARCH_URL" in os.environ:
             "ca_certs": os.environ.get("ELASTICSEARCH_CA_CERTS"),
         },
     }
+
+if "OPENSEARCH_URL" in os.environ:
+    if os.environ.get("OPENSEARCH_VERSION") == "2":
+        backend = "wagtailsearch.backends.opensearch2"
+
+    WAGTAILSEARCH_BACKENDS["opensearch"] = {
+        "BACKEND": backend,
+        "URLS": [os.environ["OPENSEARCH_URL"]],
+        "TIMEOUT": 10,
+        "max_retries": 1,
+        "AUTO_UPDATE": False,
+        "INDEX_SETTINGS": {"settings": {"index": {"number_of_shards": 1}}},
+        "OPTIONS": {
+            "ca_certs": os.environ.get("OPENSEARCH_CA_CERTS"),
+        },
+    }

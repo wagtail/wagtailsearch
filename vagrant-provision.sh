@@ -85,5 +85,5 @@ su - $DEV_USER -c "wget $OPENSEARCH2_DOWNLOAD_URL -P /home/$DEV_USER"
 su - $DEV_USER -c "cd /home/$DEV_USER && tar xzf $OPENSEARCH2_DOWNLOAD_FILE"
 
 su - $DEV_USER -c "python -m venv $OPENSEARCH2_VIRTUALENV_DIR"
-su - $DEV_USER -c "$OPENSEARCH2_PIP install 'elasticsearch==7.13.4'"
+su - $DEV_USER -c "$OPENSEARCH2_PIP install 'opensearch-py>=2,<3'"
 su - $DEV_USER -c "$OPENSEARCH2_PIP install -e $PROJECT_DIR[testing]"
