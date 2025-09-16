@@ -94,3 +94,18 @@ su - $DEV_USER -c "cd /home/$DEV_USER && tar xzf $OPENSEARCH2_DOWNLOAD_FILE"
 su - $DEV_USER -c "python -m venv $OPENSEARCH2_VIRTUALENV_DIR"
 su - $DEV_USER -c "$OPENSEARCH2_PIP install 'opensearch-py>=2,<3'"
 su - $DEV_USER -c "$OPENSEARCH2_PIP install -e $PROJECT_DIR[testing]"
+
+# Opensearch 3
+OPENSEARCH3_VERSION=3.2.0
+OPENSEARCH3_DOWNLOAD_FILE=opensearch-min-$OPENSEARCH3_VERSION-linux-arm64.tar.gz
+OPENSEARCH3_DOWNLOAD_URL=https://artifacts.opensearch.org/releases/core/opensearch/$OPENSEARCH3_VERSION/$OPENSEARCH3_DOWNLOAD_FILE
+OPENSEARCH3_ROOT=/home/$DEV_USER/opensearch-$OPENSEARCH3_VERSION
+OPENSEARCH3_VIRTUALENV_DIR=/home/$DEV_USER/.virtualenvs/wagtailsearchopensearch3
+OPENSEARCH3_PIP=$OPENSEARCH3_VIRTUALENV_DIR/bin/pip
+
+su - $DEV_USER -c "wget $OPENSEARCH3_DOWNLOAD_URL -P /home/$DEV_USER"
+su - $DEV_USER -c "cd /home/$DEV_USER && tar xzf $OPENSEARCH3_DOWNLOAD_FILE"
+
+su - $DEV_USER -c "python -m venv $OPENSEARCH3_VIRTUALENV_DIR"
+su - $DEV_USER -c "$OPENSEARCH3_PIP install 'opensearch-py>=3,<4'"
+su - $DEV_USER -c "$OPENSEARCH3_PIP install -e $PROJECT_DIR[testing]"

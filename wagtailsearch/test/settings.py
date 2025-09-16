@@ -173,6 +173,8 @@ if "ELASTICSEARCH_URL" in os.environ:
 if "OPENSEARCH_URL" in os.environ:
     if os.environ.get("OPENSEARCH_VERSION") == "2":
         backend = "wagtailsearch.backends.opensearch2"
+    elif os.environ.get("OPENSEARCH_VERSION") == "3":
+        backend = "wagtailsearch.backends.opensearch3"
 
     WAGTAILSEARCH_BACKENDS["opensearch"] = {
         "BACKEND": backend,
