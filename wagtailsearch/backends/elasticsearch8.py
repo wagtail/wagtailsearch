@@ -2,10 +2,10 @@ from django.core.exceptions import ImproperlyConfigured
 from elasticsearch.helpers import bulk
 
 from wagtailsearch.backends.elasticsearch7 import (
-    Elasticsearch7AutocompleteQueryCompiler,
     Elasticsearch7SearchBackend,
 )
 from wagtailsearch.backends.elasticsearch_common import (
+    BaseElasticsearchAutocompleteQueryCompiler,
     BaseElasticsearchIndex,
     BaseElasticsearchMapping,
     BaseElasticsearchSearchQueryCompiler,
@@ -68,7 +68,9 @@ class Elasticsearch8SearchResults(BaseElasticsearchSearchResults):
         return self.backend.connection.search(**body, **kwargs)
 
 
-class Elasticsearch8AutocompleteQueryCompiler(Elasticsearch7AutocompleteQueryCompiler):
+class Elasticsearch8AutocompleteQueryCompiler(
+    BaseElasticsearchAutocompleteQueryCompiler
+):
     mapping_class = Elasticsearch8Mapping
 
 
