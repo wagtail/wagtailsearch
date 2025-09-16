@@ -5,8 +5,10 @@ from wagtailsearch.backends.elasticsearch7 import (
     Elasticsearch7SearchBackend,
 )
 from wagtailsearch.backends.elasticsearch_common import (
+    BaseElasticsearchAtomicIndexRebuilder,
     BaseElasticsearchAutocompleteQueryCompiler,
     BaseElasticsearchIndex,
+    BaseElasticsearchIndexRebuilder,
     BaseElasticsearchMapping,
     BaseElasticsearchSearchQueryCompiler,
     BaseElasticsearchSearchResults,
@@ -74,12 +76,22 @@ class Elasticsearch8AutocompleteQueryCompiler(
     mapping_class = Elasticsearch8Mapping
 
 
+class Elasticsearch8IndexRebuilder(BaseElasticsearchIndexRebuilder):
+    pass
+
+
+class Elasticsearch8AtomicIndexRebuilder(BaseElasticsearchAtomicIndexRebuilder):
+    pass
+
+
 class Elasticsearch8SearchBackend(Elasticsearch7SearchBackend):
     mapping_class = Elasticsearch8Mapping
     index_class = Elasticsearch8Index
     query_compiler_class = Elasticsearch8SearchQueryCompiler
     autocomplete_query_compiler_class = Elasticsearch8AutocompleteQueryCompiler
     results_class = Elasticsearch8SearchResults
+    basic_rebuilder_class = Elasticsearch8IndexRebuilder
+    atomic_rebuilder_class = Elasticsearch8AtomicIndexRebuilder
     timeout_kwarg_name = "request_timeout"
 
     def _get_host_config_from_url(self, url):
