@@ -4,12 +4,12 @@ from elasticsearch.helpers import bulk
 from wagtailsearch.backends.elasticsearch7 import (
     Elasticsearch7AutocompleteQueryCompiler,
     Elasticsearch7SearchBackend,
-    Elasticsearch715SearchResults,
 )
 from wagtailsearch.backends.elasticsearch_common import (
     BaseElasticsearchIndex,
     BaseElasticsearchMapping,
     BaseElasticsearchSearchQueryCompiler,
+    BaseElasticsearchSearchResults,
 )
 from wagtailsearch.index import class_is_indexed
 
@@ -61,8 +61,11 @@ class Elasticsearch8SearchQueryCompiler(BaseElasticsearchSearchQueryCompiler):
     mapping_class = Elasticsearch8Mapping
 
 
-class Elasticsearch8SearchResults(Elasticsearch715SearchResults):
-    pass
+class Elasticsearch8SearchResults(BaseElasticsearchSearchResults):
+    def _backend_do_search(self, body, **kwargs):
+        # As of Elasticsearch 7.15, the 'body' parameter is deprecated; instead, the top-level
+        # keys of the body dict are now kwargs in their own right
+        return self.backend.connection.search(**body, **kwargs)
 
 
 class Elasticsearch8AutocompleteQueryCompiler(Elasticsearch7AutocompleteQueryCompiler):
