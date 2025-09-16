@@ -1,15 +1,15 @@
 from django.core.exceptions import ImproperlyConfigured
+from elasticsearch import Elasticsearch
+from elasticsearch import NotFoundError as ElasticsearchNotFoundError
 from elasticsearch.helpers import bulk
 
-from wagtailsearch.backends.elasticsearch7 import (
-    Elasticsearch7SearchBackend,
-)
 from wagtailsearch.backends.elasticsearch_common import (
     BaseElasticsearchAtomicIndexRebuilder,
     BaseElasticsearchAutocompleteQueryCompiler,
     BaseElasticsearchIndex,
     BaseElasticsearchIndexRebuilder,
     BaseElasticsearchMapping,
+    BaseElasticsearchSearchBackend,
     BaseElasticsearchSearchQueryCompiler,
     BaseElasticsearchSearchResults,
 )
@@ -84,7 +84,7 @@ class Elasticsearch8AtomicIndexRebuilder(BaseElasticsearchAtomicIndexRebuilder):
     pass
 
 
-class Elasticsearch8SearchBackend(Elasticsearch7SearchBackend):
+class Elasticsearch8SearchBackend(BaseElasticsearchSearchBackend):
     mapping_class = Elasticsearch8Mapping
     index_class = Elasticsearch8Index
     query_compiler_class = Elasticsearch8SearchQueryCompiler
@@ -92,6 +92,9 @@ class Elasticsearch8SearchBackend(Elasticsearch7SearchBackend):
     results_class = Elasticsearch8SearchResults
     basic_rebuilder_class = Elasticsearch8IndexRebuilder
     atomic_rebuilder_class = Elasticsearch8AtomicIndexRebuilder
+    connection_class = Elasticsearch
+    NotFoundError = ElasticsearchNotFoundError
+
     timeout_kwarg_name = "request_timeout"
 
     def _get_host_config_from_url(self, url):
@@ -110,7 +113,7 @@ class Elasticsearch8SearchBackend(Elasticsearch7SearchBackend):
     def _get_options_from_host_urls(self, urls):
         """Given a list of parsed URLs, return a dict of additional options to be passed into the
         Elasticsearch constructor; necessary for options that aren't valid as part of the 'hosts' config"""
-        opts = super()._get_options_from_host_urls(urls)
+        opts = {}
 
         basic_auth = (urls[0].username, urls[0].password)
         # Ensure that all urls have the same credentials
