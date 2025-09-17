@@ -97,6 +97,29 @@ class BackendTests:
             ["JavaScript: The Definitive Guide"],
         )
 
+    def test_search_via_queryset_with_order_param(self):
+        results = models.Book.objects.search(
+            "JavaScript", backend=self.backend_name, order="number_of_pages"
+        )
+        self.assertEqual(
+            [r.title for r in results],
+            [
+                "JavaScript: The good parts",
+                "JavaScript: The Definitive Guide",
+            ],
+        )
+
+        results = models.Book.objects.search(
+            "JavaScript", backend=self.backend_name, order="-number_of_pages"
+        )
+        self.assertEqual(
+            [r.title for r in results],
+            [
+                "JavaScript: The Definitive Guide",
+                "JavaScript: The good parts",
+            ],
+        )
+
     def test_search_count(self):
         results = self.backend.search("JavaScript", models.Book)
         self.assertEqual(results.count(), 2)
@@ -336,6 +359,29 @@ class BackendTests:
             [r.title for r in results],
             [
                 "JavaScript: The Definitive Guide",
+            ],
+        )
+
+    def test_autocomplete_via_queryset_with_order_param(self):
+        results = models.Book.objects.autocomplete(
+            "JavaSc", backend=self.backend_name, order="number_of_pages"
+        )
+        self.assertEqual(
+            [r.title for r in results],
+            [
+                "JavaScript: The good parts",
+                "JavaScript: The Definitive Guide",
+            ],
+        )
+
+        results = models.Book.objects.autocomplete(
+            "JavaSc", backend=self.backend_name, order="-number_of_pages"
+        )
+        self.assertEqual(
+            [r.title for r in results],
+            [
+                "JavaScript: The Definitive Guide",
+                "JavaScript: The good parts",
             ],
         )
 
